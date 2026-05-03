@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Morgenbriefing">
+<meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Morgenbriefing</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='50%25' y='50%25' font-family='-apple-system,BlinkMacSystemFont,sans-serif' font-size='100' font-weight='600' fill='%230a84ff' text-anchor='middle' dominant-baseline='central'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfd; --bg-section: #ffffff; --bg-subtle: #f5f5f7;
+    --bg-overlay: rgba(251,251,253,0.85);
+    --ink: #1d1d1f; --ink-secondary: #6e6e73; --ink-tertiary: #86868b;
+    --line: #d2d2d7; --line-subtle: #f0f0f2;
+    --link: #0066cc; --link-hover: #0077ed;
+    --gain: #00873c; --loss: #c8102e;
+    --warning: #b25000; --warning-bg: #fff8f0; --warning-border: #ffd9a8;
+    --danger-bg: #fff0f0; --danger-border: #ffc8c8;
+    --accent-gradient: linear-gradient(135deg, #0066cc 0%, #5856d6 100%);
+    --shadow-modal: 0 20px 60px rgba(0,0,0,0.15);
+    --shadow-menu: 4px 0 30px rgba(0,0,0,0.1);
+    --modal-backdrop: rgba(0,0,0,0.4);
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+
+  [data-theme="dark"] {
+    --bg: #000000; --bg-section: #1c1c1e; --bg-subtle: #2c2c2e;
+    --bg-overlay: rgba(0,0,0,0.85);
+    --ink: #f5f5f7; --ink-secondary: #98989d; --ink-tertiary: #6e6e73;
+    --line: #38383a; --line-subtle: #2c2c2e;
+    --link: #0a84ff; --link-hover: #409cff;
+    --gain: #30d158; --loss: #ff453a;
+    --warning: #ff9f0a; --warning-bg: rgba(255,159,10,0.1); --warning-border: rgba(255,159,10,0.3);
+    --danger-bg: rgba(255,69,58,0.1); --danger-border: rgba(255,69,58,0.3);
+    --accent-gradient: linear-gradient(135deg, #0a84ff 0%, #bf5af2 100%);
+    --shadow-modal: 0 20px 60px rgba(0,0,0,0.5);
+    --shadow-menu: 4px 0 30px rgba(0,0,0,0.5);
+    --modal-backdrop: rgba(0,0,0,0.7);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000000; --bg-section: #1c1c1e; --bg-subtle: #2c2c2e;
+      --bg-overlay: rgba(0,0,0,0.85);
+      --ink: #f5f5f7; --ink-secondary: #98989d; --ink-tertiary: #6e6e73;
+      --line: #38383a; --line-subtle: #2c2c2e;
+      --link: #0a84ff; --link-hover: #409cff;
+      --gain: #30d158; --loss: #ff453a;
+      --warning: #ff9f0a; --warning-bg: rgba(255,159,10,0.1); --warning-border: rgba(255,159,10,0.3);
+      --danger-bg: rgba(255,69,58,0.1); --danger-border: rgba(255,69,58,0.3);
+      --accent-gradient: linear-gradient(135deg, #0a84ff 0%, #bf5af2 100%);
+      --shadow-modal: 0 20px 60px rgba(0,0,0,0.5);
+      --shadow-menu: 4px 0 30px rgba(0,0,0,0.5);
+      --modal-backdrop: rgba(0,0,0,0.7);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font); font-weight: 400;
+    line-height: 1.47; letter-spacing: -0.003em;
+    min-height: 100vh; transition: background 0.3s ease, color 0.3s ease;
+    overscroll-behavior-y: contain;
+    padding-left: var(--safe-left); padding-right: var(--safe-right);
+  }
+  body.modal-open { overflow: hidden; position: fixed; width: 100%; }
+
+  .container { max-width: 980px; margin: 0 auto; padding: 0 22px; }
+  @media (max-width: 640px) { .container { padding: 0 16px; } }
+
+  .topbar {
+    border-bottom: 1px solid var(--line-subtle);
+    padding: 12px 0; padding-top: calc(12px + var(--safe-top));
+    margin-bottom: 60px;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: var(--bg-overlay);
+    position: sticky; top: 0; z-index: 100;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  @media (max-width: 640px) { .topbar { margin-bottom: 32px; } }
+
+  .topbar-inner {
+    max-width: 980px; margin: 0 auto; padding: 0 22px;
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+    font-size: 12px; color: var(--ink-secondary); gap: 16px;
+  }
+  @media (max-width: 640px) { .topbar-inner { padding: 0 16px; } }
+
+  .topbar-brand { color: var(--ink); font-weight: 500; letter-spacing: -0.01em; text-align: center; }
+  .topbar-left, .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-right { justify-content: flex-end; }
+
+  .menu-toggle, .theme-toggle {
+    background: transparent; border: 1px solid var(--line);
+    color: var(--ink-secondary); width: 36px; height: 36px;
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; padding: 0; position: relative;
+  }
+  .menu-toggle:active, .theme-toggle:active { transform: scale(0.95); }
+  .menu-toggle:hover, .theme-toggle:hover { color: var(--ink); border-color: var(--ink); }
+  .menu-toggle svg, .theme-toggle svg { width: 16px; height: 16px; }
+
+  .theme-toggle .sun-icon { display: none; }
+  [data-theme="dark"] .theme-toggle .sun-icon { display: block; }
+  [data-theme="dark"] .theme-toggle .moon-icon { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-toggle .sun-icon { display: block; }
+    :root:not([data-theme="light"]) .theme-toggle .moon-icon { display: none; }
+  }
+
+  .menu-toggle.has-alert::after {
+    content: ''; position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    background: var(--loss);
+    border-radius: 50%;
+    border: 2px solid var(--bg-overlay);
+  }
+
+  /* Side Menu */
+  .menu-overlay {
+    position: fixed; inset: 0;
+    background: var(--modal-backdrop);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    z-index: 250;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .menu-overlay.active { opacity: 1; pointer-events: auto; }
+
+  .side-menu {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 320px; max-width: calc(100vw - 60px);
+    background: var(--bg-section);
+    box-shadow: var(--shadow-menu);
+    z-index: 251;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; flex-direction: column;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+  }
+  .side-menu.active { transform: translateX(0); }
+
+  .menu-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+  .menu-title { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; }
+
+  .menu-close {
+    background: transparent; border: none;
+    color: var(--ink-secondary);
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .menu-close:active { background: var(--bg-subtle); transform: scale(0.92); }
+
+  .menu-content { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .menu-section { padding: 16px 24px; }
+  .menu-section-title {
+    font-size: 12px; color: var(--ink-tertiary);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; margin-bottom: 12px;
+  }
+
+  .menu-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 24px;
+    color: var(--ink); cursor: pointer;
+    transition: background 0.15s;
+    font-size: 16px; border: none; background: none;
+    width: 100%; text-align: left; font-family: inherit;
+    min-height: 52px;
+  }
+  .menu-item:active { background: var(--bg-subtle); }
+  @media (hover: hover) { .menu-item:hover { background: var(--bg-subtle); } }
+
+  .menu-item-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--bg-subtle);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-secondary); flex-shrink: 0;
+  }
+  .menu-item-icon svg { width: 16px; height: 16px; }
+  .menu-item-content { flex: 1; min-width: 0; }
+  .menu-item-label { font-size: 16px; font-weight: 500; }
+  .menu-item-sub {
+    font-size: 13px; color: var(--ink-tertiary); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .menu-item-arrow { color: var(--ink-tertiary); flex-shrink: 0; }
+  .menu-item-arrow svg { width: 14px; height: 14px; }
+
+  .settings-panel { padding: 16px 24px 24px; display: none; overflow-y: auto; }
+  .settings-panel.active { display: block; }
+
+  .setting-back {
+    background: transparent; border: none;
+    color: var(--link); cursor: pointer;
+    padding: 8px 0; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 15px; font-weight: 500;
+  }
+  .setting-back svg { width: 16px; height: 16px; }
+
+  .setting-group {
+    background: var(--bg-subtle); border-radius: 14px;
+    padding: 4px; margin-bottom: 16px;
+  }
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; gap: 12px;
+  }
+  .setting-row + .setting-row { border-top: 1px solid var(--line-subtle); }
+  .setting-label { font-size: 15px; font-weight: 500; flex: 1; min-width: 0; }
+  .setting-desc { font-size: 13px; color: var(--ink-tertiary); margin-top: 4px; line-height: 1.4; }
+
+  .setting-input {
+    background: var(--bg-section); border: 1px solid transparent;
+    color: var(--ink); padding: 10px 14px;
+    font-family: inherit; font-size: 15px;
+    border-radius: 10px; width: 100%;
+    -webkit-appearance: none; transition: all 0.15s;
+  }
+  .setting-input:focus {
+    outline: none; border-color: var(--link);
+    box-shadow: 0 0 0 3px rgba(10,132,255,0.2);
+  }
+
+  .setting-block { padding: 16px; }
+
+  .toggle {
+    position: relative; width: 51px; height: 31px;
+    background: var(--line); border-radius: 31px;
+    cursor: pointer; transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: ''; position: absolute;
+    top: 2px; left: 2px;
+    width: 27px; height: 27px;
+    background: white; border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  }
+  .toggle.on { background: var(--gain); }
+  .toggle.on::after { transform: translateX(20px); }
+
+  .threshold-quick {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px;
+  }
+  .threshold-btn {
+    background: var(--bg-section); border: 1px solid var(--line);
+    color: var(--ink); padding: 10px;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    border-radius: 10px; cursor: pointer;
+    transition: all 0.15s; min-height: 40px;
+  }
+  .threshold-btn:active { transform: scale(0.96); }
+  .threshold-btn.active {
+    background: var(--link); color: white; border-color: var(--link);
+  }
+
+  .threshold-custom {
+    display: flex; gap: 8px; align-items: center; margin-top: 12px;
+  }
+  .threshold-custom input {
+    flex: 1; background: var(--bg-section);
+    border: 1px solid var(--line); color: var(--ink);
+    padding: 10px 14px; font-family: inherit; font-size: 15px;
+    border-radius: 10px; -webkit-appearance: none;
+  }
+  .threshold-custom input:focus {
+    outline: none; border-color: var(--link);
+    box-shadow: 0 0 0 3px rgba(10,132,255,0.2);
+  }
+
+  .save-btn {
+    width: 100%; background: var(--link);
+    color: white; border: none; padding: 14px;
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    border-radius: 12px; cursor: pointer;
+    transition: all 0.15s; min-height: 48px; margin-top: 8px;
+  }
+  .save-btn:active { transform: scale(0.98); background: var(--link-hover); }
+
+  /* ALERT BANNER */
+  .alert-banner {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: none;
+    animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .alert-banner.show { display: block; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .alert-banner-header {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--loss); font-weight: 600;
+    margin-bottom: 8px; font-size: 15px;
+  }
+  .alert-banner-header svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .alert-banner-body { color: var(--ink); font-size: 14px; line-height: 1.5; }
+  .alert-banner-body ul { margin: 8px 0 0 0; padding-left: 20px; }
+  .alert-banner-body li { margin-bottom: 4px; }
+  .alert-banner-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .alert-action-btn {
+    background: transparent; border: 1px solid var(--loss);
+    color: var(--loss); padding: 8px 14px;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    border-radius: 980px; cursor: pointer;
+    transition: all 0.15s; min-height: 36px;
+  }
+  .alert-action-btn:active { transform: scale(0.95); background: var(--loss); color: white; }
+  .alert-action-btn.dismiss { border-color: var(--ink-tertiary); color: var(--ink-secondary); }
+  .alert-action-btn.dismiss:active { background: var(--ink-tertiary); color: white; }
+
+  /* HERO */
+  .hero { text-align: center; padding: 0 0 40px; }
+  @media (max-width: 640px) { .hero { padding: 0 0 28px; } }
+
+  .hero-eyebrow { font-size: 17px; color: var(--ink-secondary); margin-bottom: 8px; }
+  @media (max-width: 640px) { .hero-eyebrow { font-size: 15px; } }
+
+  .hero h1 {
+    font-size: clamp(32px, 7vw, 72px);
+    font-weight: 600; letter-spacing: -0.025em;
+    line-height: 1.05; margin: 0 auto; max-width: 18ch;
+  }
+  .hero h1 .accent {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero-sub { font-size: 19px; color: var(--ink-secondary); margin-top: 16px; letter-spacing: -0.01em; }
+  @media (max-width: 640px) { .hero-sub { font-size: 15px; margin-top: 12px; } }
+
+  /* WEATHER + DAY GRID */
+  .day-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 640px) { .day-grid { grid-template-columns: 1fr; } }
+
+  .weather-card, .schedule-card {
+    background: var(--bg-section);
+    border-radius: 18px;
+    padding: 24px;
+    transition: background 0.3s ease;
+  }
+
+  .card-eyebrow {
+    font-size: 12px; color: var(--ink-tertiary);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; margin-bottom: 12px;
+  }
+
+  .weather-main {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .weather-temp {
+    font-size: 48px; font-weight: 600;
+    letter-spacing: -0.03em; line-height: 1;
+  }
+
+  .weather-icon {
+    font-size: 48px; line-height: 1;
+  }
+
+  .weather-desc {
+    font-size: 15px; color: var(--ink-secondary);
+    margin-bottom: 16px;
+  }
+
+  .weather-details {
+    display: flex; gap: 16px;
+    padding-top: 12px; border-top: 1px solid var(--line-subtle);
+    font-size: 13px; color: var(--ink-secondary);
+  }
+
+  .weather-detail-item {
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .weather-loading {
+    color: var(--ink-tertiary); font-size: 14px; padding: 20px 0; text-align: center;
+  }
+
+  .weather-error {
+    color: var(--ink-tertiary); font-size: 13px; padding: 20px 0;
+    text-align: center; line-height: 1.5;
+  }
+
+  .weather-permission-btn {
+    background: var(--link); color: white; border: none;
+    padding: 10px 20px; font-family: inherit; font-size: 14px;
+    font-weight: 500; border-radius: 980px; cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* SCHEDULE */
+  .schedule-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 320px; overflow-y: auto;
+  }
+
+  .schedule-item {
+    display: grid; grid-template-columns: auto 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 10px 12px;
+    background: var(--bg-subtle);
+    border-radius: 10px;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+
+  .schedule-item.now {
+    background: var(--link);
+    color: white;
+  }
+
+  .schedule-item.now .schedule-meta,
+  .schedule-item.now .schedule-room {
+    color: rgba(255,255,255,0.85);
+  }
+
+  .schedule-item.changed {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+  }
+
+  .schedule-time {
+    font-weight: 500; font-size: 13px;
+    color: var(--ink-secondary);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .schedule-item.now .schedule-time { color: rgba(255,255,255,0.85); }
+
+  .schedule-subject {
+    font-weight: 600; font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .schedule-meta {
+    font-size: 12px; color: var(--ink-tertiary);
+    margin-top: 2px;
+  }
+  .schedule-room {
+    font-weight: 500; font-size: 13px;
+    color: var(--ink-secondary);
+    text-align: right;
+  }
+
+  .schedule-empty {
+    text-align: center; color: var(--ink-tertiary);
+    font-size: 14px; padding: 30px 16px;
+  }
+
+  .schedule-tabs {
+    display: flex; gap: 4px;
+    background: var(--bg-subtle);
+    padding: 3px; border-radius: 980px;
+    margin-bottom: 12px;
+    width: fit-content;
+  }
+
+  .schedule-tab {
+    background: transparent; border: none;
+    color: var(--ink-secondary);
+    padding: 6px 12px;
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    border-radius: 980px; cursor: pointer;
+    transition: all 0.2s; min-height: 28px;
+  }
+  .schedule-tab.active {
+    background: var(--bg-section); color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  [data-theme="dark"] .schedule-tab.active { box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+
+  .schedule-error {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--warning);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* SECTION */
+  section { padding: 40px 0; }
+  @media (max-width: 640px) { section { padding: 28px 0; } }
+
+  .portfolio-hero { text-align: center; padding: 24px 0 30px; }
+  .portfolio-hero-label { font-size: 15px; color: var(--ink-secondary); margin-bottom: 8px; }
+  .portfolio-hero-value {
+    font-size: clamp(44px, 9vw, 88px);
+    font-weight: 600; letter-spacing: -0.03em; line-height: 1; margin-bottom: 12px;
+  }
+  .portfolio-hero-change { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+  @media (max-width: 640px) { .portfolio-hero-change { font-size: 16px; } }
+
+  .pos { color: var(--gain); }
+  .neg { color: var(--loss); }
+
+  /* CHART */
+  .chart-container {
+    background: var(--bg-section);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 32px;
+    transition: background 0.3s ease;
+  }
+
+  .chart-tabs {
+    display: flex; gap: 4px;
+    background: var(--bg-subtle);
+    padding: 3px; border-radius: 980px;
+    margin-bottom: 16px;
+    width: fit-content;
+  }
+  .chart-tab {
+    background: transparent; border: none;
+    color: var(--ink-secondary);
+    padding: 6px 14px;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    border-radius: 980px; cursor: pointer;
+    transition: all 0.2s; min-height: 30px;
+  }
+  .chart-tab.active {
+    background: var(--bg-section); color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  [data-theme="dark"] .chart-tab.active { box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+
+  .chart-area {
+    width: 100%; height: 200px;
+    position: relative;
+  }
+
+  .chart-svg { width: 100%; height: 100%; display: block; }
+
+  .chart-loading, .chart-empty {
+    color: var(--ink-tertiary); font-size: 14px;
+    text-align: center; padding: 80px 20px;
+  }
+
+  .chart-tooltip {
+    position: absolute;
+    background: var(--ink); color: var(--bg);
+    padding: 8px 12px; border-radius: 8px;
+    font-size: 12px; font-weight: 500;
+    pointer-events: none;
+    transform: translate(-50%, -100%);
+    margin-top: -8px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .chart-tooltip.show { opacity: 1; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--line); border-radius: 18px; overflow: hidden; margin-bottom: 32px;
+  }
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stats .stat:last-child { grid-column: span 2; }
+  }
+  .stat { background: var(--bg-section); padding: 20px 16px; text-align: center; transition: background 0.3s ease; }
+  @media (min-width: 641px) { .stat { padding: 32px; } }
+  .stat-label { font-size: 12px; color: var(--ink-secondary); margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+  .stat-sub { font-size: 13px; margin-top: 4px; font-weight: 500; }
+  @media (min-width: 641px) {
+    .stat-label { font-size: 14px; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; }
+    .stat-sub { font-size: 15px; }
+  }
+
+  .portfolio-list { background: var(--bg-section); border-radius: 18px; overflow: hidden; transition: background 0.3s ease; }
+  .portfolio-item {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 16px;
+    padding: 18px 20px; border-bottom: 1px solid var(--line-subtle);
+    align-items: center; transition: background 0.15s;
+  }
+  @media (min-width: 641px) { .portfolio-item { padding: 22px 28px; gap: 24px; } }
+  .portfolio-item:last-child { border-bottom: none; }
+  .portfolio-item:active { background: var(--bg-subtle); }
+  @media (hover: hover) { .portfolio-item:hover { background: var(--bg-subtle); } }
+
+  .asset-name { font-size: 16px; font-weight: 500; letter-spacing: -0.01em; }
+  .asset-meta { font-size: 13px; color: var(--ink-tertiary); margin-top: 2px; }
+  .asset-price { font-size: 16px; font-weight: 500; text-align: right; letter-spacing: -0.01em; }
+  .asset-change { font-size: 13px; margin-top: 2px; text-align: right; font-weight: 500; }
+  @media (min-width: 641px) {
+    .asset-name { font-size: 19px; } .asset-meta { font-size: 14px; }
+    .asset-price { font-size: 19px; } .asset-change { font-size: 14px; }
+  }
+
+  .asset-name.alerted::before { content: '⚠'; color: var(--loss); margin-right: 6px; font-size: 14px; }
+
+  .actions { display: flex; gap: 4px; }
+  .icon-btn {
+    background: transparent; border: none;
+    width: 44px; height: 44px; border-radius: 50%;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-tertiary);
+  }
+  .icon-btn:active { background: var(--bg-subtle); transform: scale(0.92); }
+  @media (hover: hover) {
+    .icon-btn:hover { background: var(--bg-subtle); }
+    .icon-btn.edit:hover { color: var(--link); }
+    .icon-btn.delete:hover { color: var(--loss); }
+  }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  .empty-state { padding: 60px 24px; text-align: center; color: var(--ink-secondary); font-size: 16px; }
+
+  .portfolio-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .action-btn {
+    flex: 1; min-width: 0;
+    background: var(--bg-subtle); border: 1px solid transparent;
+    color: var(--ink); padding: 14px 16px;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    border-radius: 14px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; min-height: 48px; letter-spacing: -0.01em;
+  }
+  .action-btn:active { transform: scale(0.97); background: var(--line-subtle); }
+  @media (hover: hover) { .action-btn:hover { background: var(--line-subtle); } }
+  .action-btn svg { width: 16px; height: 16px; }
+  .action-btn.primary { background: var(--link); color: white; }
+  .action-btn.primary:hover, .action-btn.primary:active { background: var(--link-hover); }
+  @media (max-width: 480px) {
+    .portfolio-actions { flex-direction: column; }
+    .action-btn { width: 100%; }
+  }
+
+  .add-form {
+    background: var(--bg-subtle); border-radius: 18px;
+    padding: 16px; margin-top: 12px;
+    display: none;
+    grid-template-columns: 1.5fr 1.5fr 0.8fr 0.8fr auto; gap: 10px;
+    transition: background 0.3s ease;
+  }
+  .add-form.expanded { display: grid; }
+  @media (max-width: 640px) {
+    .add-form.expanded { grid-template-columns: 1fr; gap: 10px; }
+  }
+  @media (min-width: 641px) { .add-form { padding: 24px; gap: 12px; } }
+
+  .add-form input {
+    background: var(--bg-section); border: 1px solid transparent;
+    color: var(--ink); padding: 14px 16px;
+    font-family: inherit; font-size: 16px;
+    border-radius: 10px; transition: all 0.15s; -webkit-appearance: none;
+    width: 100%;
+  }
+  .add-form input:focus {
+    outline: none; border-color: var(--link);
+    box-shadow: 0 0 0 3px rgba(10,132,255,0.2);
+  }
+  .add-form input::placeholder { color: var(--ink-tertiary); }
+  .add-form-hint {
+    grid-column: 1 / -1; font-size: 12px;
+    color: var(--ink-tertiary); text-align: center; margin-top: 0;
+  }
+
+  .btn {
+    background: var(--link); color: white; border: none;
+    padding: 14px 22px; font-family: inherit; font-size: 15px; font-weight: 500;
+    border-radius: 980px; cursor: pointer; transition: all 0.15s;
+    letter-spacing: -0.01em; white-space: nowrap; min-height: 44px;
+  }
+  .btn:active { transform: scale(0.97); background: var(--link-hover); }
+  @media (hover: hover) {
+    .btn:hover { background: var(--link-hover); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+  }
+  .btn-secondary { background: var(--bg-section); color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-subtle); transform: none; }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: var(--modal-backdrop);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; padding: 20px;
+    padding-top: calc(20px + var(--safe-top));
+    padding-bottom: calc(20px + var(--safe-bottom));
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--bg-section); border-radius: 18px;
+    padding: 28px 24px; max-width: 480px; width: 100%;
+    box-shadow: var(--shadow-modal);
+    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: calc(100vh - 80px); overflow-y: auto;
+  }
+  @media (min-width: 641px) { .modal { padding: 32px; } }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .modal h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 8px; }
+  .modal-desc { font-size: 14px; color: var(--ink-secondary); margin-bottom: 20px; line-height: 1.5; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label { display: block; font-size: 13px; color: var(--ink-secondary); margin-bottom: 6px; font-weight: 500; }
+  .modal-field input, .modal-field textarea {
+    width: 100%; background: var(--bg-subtle); border: 1px solid transparent;
+    color: var(--ink); padding: 14px 16px; font-family: inherit; font-size: 14px;
+    border-radius: 10px; -webkit-appearance: none; resize: vertical;
+  }
+  .modal-field textarea {
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 12px; min-height: 140px; line-height: 1.5;
+  }
+  .modal-field input:focus, .modal-field textarea:focus {
+    outline: none; border-color: var(--link); background: var(--bg-section);
+    box-shadow: 0 0 0 3px rgba(10,132,255,0.2);
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap; }
+
+  .toast {
+    position: fixed;
+    bottom: calc(24px + var(--safe-bottom));
+    left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg);
+    padding: 12px 20px; border-radius: 980px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 400;
+    opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    max-width: calc(100vw - 40px); text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--loss); }
+  .toast.success { background: var(--gain); }
+
+  .footer {
+    margin-top: 60px; padding: 28px 0;
+    padding-bottom: calc(28px + var(--safe-bottom));
+    border-top: 1px solid var(--line-subtle);
+    text-align: center; font-size: 11px;
+    color: var(--ink-tertiary); line-height: 1.5;
+  }
+
+  .fade-in { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in:nth-child(1) { animation-delay: 0.05s; }
+  .fade-in:nth-child(2) { animation-delay: 0.15s; }
+  .fade-in:nth-child(3) { animation-delay: 0.25s; }
+  .fade-in:nth-child(4) { animation-delay: 0.35s; }
+
+  .info-pill {
+    display: inline-block; background: var(--bg-subtle);
+    color: var(--ink-secondary); padding: 8px 14px;
+    border-radius: 980px; font-size: 12px; margin-top: 16px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Side Menu -->
+<div class="menu-overlay" id="menu-overlay" onclick="closeMenu()"></div>
+<aside class="side-menu" id="side-menu">
+  <div class="menu-header">
+    <div class="menu-title" id="menu-title">Menü</div>
+    <button class="menu-close" onclick="closeMenu()" aria-label="Schließen">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+
+  <div class="menu-content" id="menu-main">
+    <div class="menu-section">
+      <div class="menu-section-title">Einstellungen</div>
+      <button class="menu-item" onclick="openSettings('alerts')">
+        <div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
+        <div class="menu-item-content">
+          <div class="menu-item-label">Benachrichtigungen</div>
+          <div class="menu-item-sub" id="alert-status-sub">Aus</div>
+        </div>
+        <div class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+      </button>
+
+      <button class="menu-item" onclick="openSettings('schedule')">
+        <div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+        <div class="menu-item-content">
+          <div class="menu-item-label">Stundenplan</div>
+          <div class="menu-item-sub" id="schedule-status-sub">Nicht konfiguriert</div>
+        </div>
+        <div class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+      </button>
+
+      <button class="menu-item" onclick="openSettings('about')">
+        <div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></div>
+        <div class="menu-item-content">
+          <div class="menu-item-label">Über</div>
+          <div class="menu-item-sub">Wie funktioniert die App</div>
+        </div>
+        <div class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alerts Settings Panel -->
+  <div class="settings-panel" id="settings-alerts">
+    <button class="setting-back" onclick="closeSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      Zurück
+    </button>
+
+    <div class="setting-group">
+      <div class="setting-row">
+        <div style="flex: 1;">
+          <div class="setting-label">Warnungen aktivieren</div>
+          <div class="setting-desc">Beim Öffnen der App werden gefallene Positionen gemeldet</div>
+        </div>
+        <div class="toggle" id="alert-toggle" onclick="toggleAlerts()"></div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-block">
+        <div class="setting-label">Warnung ab Verlust von</div>
+        <div class="setting-desc" style="margin-bottom: 0;">Wähle einen Wert oder gib eigenen ein</div>
+
+        <div class="threshold-quick">
+          <button class="threshold-btn" data-value="5" onclick="setThreshold(5)">5%</button>
+          <button class="threshold-btn" data-value="10" onclick="setThreshold(10)">10%</button>
+          <button class="threshold-btn" data-value="15" onclick="setThreshold(15)">15%</button>
+          <button class="threshold-btn" data-value="20" onclick="setThreshold(20)">20%</button>
+        </div>
+
+        <div class="threshold-custom">
+          <input type="number" id="threshold-input" min="1" max="99" step="0.5" placeholder="Eigener Wert">
+          <span style="color: var(--ink-secondary); font-size: 16px;">%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-block">
+        <div class="setting-label">Referenzwert</div>
+        <div class="setting-desc" style="margin-bottom: 12px;">Worauf soll sich der Verlust beziehen?</div>
+        <div class="threshold-quick" style="grid-template-columns: 1fr 1fr;">
+          <button class="threshold-btn active" data-ref="cost" onclick="setReference('cost')">Kaufkurs</button>
+          <button class="threshold-btn" data-ref="day" onclick="setReference('day')">Vortageskurs</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="save-btn" onclick="saveAlertSettings()">Speichern</button>
+  </div>
+
+  <!-- Schedule Settings -->
+  <div class="settings-panel" id="settings-schedule">
+    <button class="setting-back" onclick="closeSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      Zurück
+    </button>
+
+    <div class="setting-group">
+      <div class="setting-row">
+        <div style="flex: 1;">
+          <div class="setting-label">Stundenplan anzeigen</div>
+          <div class="setting-desc">Heutige Schulstunden im Dashboard</div>
+        </div>
+        <div class="toggle" id="schedule-toggle" onclick="toggleSchedule()"></div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-block">
+        <div class="setting-label">Schüler-ID</div>
+        <div class="setting-desc" style="margin-bottom: 12px;">Deine Untis-ID (z.B. 24-88)</div>
+        <input type="text" class="setting-input" id="schedule-student-id" placeholder="24-88">
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-block">
+        <div class="setting-label">Klassen-ID</div>
+        <div class="setting-desc" style="margin-bottom: 12px;">Deine Klasse (z.B. 12 BGy-24)</div>
+        <input type="text" class="setting-input" id="schedule-class-id" placeholder="12 BGy-24">
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-block">
+        <div class="setting-label">Untis Basis-URL</div>
+        <div class="setting-desc" style="margin-bottom: 12px;">Wo dein Stundenplan online steht</div>
+        <input type="text" class="setting-input" id="schedule-base-url" placeholder="https://hoga-schulen.de/fileadmin/stundenplan/BSZ/">
+      </div>
+    </div>
+
+    <button class="save-btn" onclick="saveScheduleSettings()">Speichern</button>
+  </div>
+
+  <!-- About Panel -->
+  <div class="settings-panel" id="settings-about">
+    <button class="setting-back" onclick="closeSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      Zurück
+    </button>
+
+    <div style="font-size: 14px; line-height: 1.6; color: var(--ink-secondary); padding: 0 4px;">
+      <p style="margin-bottom: 12px;"><strong style="color: var(--ink);">Morgenbriefing</strong> ist dein persönliches Dashboard.</p>
+      <p style="margin-bottom: 12px;"><strong style="color: var(--ink);">Datenschutz:</strong> Alle deine Daten werden nur lokal in diesem Browser gespeichert.</p>
+      <p style="margin-bottom: 12px;"><strong style="color: var(--ink);">Kurse:</strong> Werden live von Yahoo Finance geladen. Können verzögert sein.</p>
+      <p style="margin-bottom: 12px;"><strong style="color: var(--ink);">Wetter:</strong> Open-Meteo (kostenlos, ohne Anmeldung).</p>
+      <p style="margin-bottom: 12px;"><strong style="color: var(--ink);">Stundenplan:</strong> Wird live von der Schulwebsite geladen. Kombiniert deinen persönlichen Plan mit dem Klassenplan für Räume und Lehrer.</p>
+      <p style="color: var(--ink-tertiary); font-size: 13px;">Diese App ist keine Anlageberatung.</p>
+    </div>
+  </div>
+</aside>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <button class="menu-toggle" id="menu-toggle-btn" onclick="openMenu()" title="Menü" aria-label="Menü öffnen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="topbar-brand">Morgenbriefing</div>
+    <div class="topbar-right">
+      <div id="now-time">—</div>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Modus wechseln" aria-label="Modus wechseln">
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Banners -->
+  <div class="alert-banner" id="alert-banner">
+    <div class="alert-banner-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      <span id="alert-headline">Achtung</span>
+    </div>
+    <div class="alert-banner-body" id="alert-body"></div>
+    <div class="alert-banner-actions">
+      <button class="alert-action-btn dismiss" onclick="dismissAlerts()">Verstanden</button>
+      <button class="alert-action-btn" onclick="openSettings('alerts'); openMenu();">Einstellung ändern</button>
+    </div>
+  </div>
+
+  <div class="alert-banner" id="schedule-banner">
+    <div class="alert-banner-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>Änderungen im Stundenplan</span>
+    </div>
+    <div class="alert-banner-body" id="schedule-banner-body"></div>
+    <div class="alert-banner-actions">
+      <button class="alert-action-btn dismiss" onclick="dismissScheduleAlerts()">Verstanden</button>
+    </div>
+  </div>
+
+  <section class="hero fade-in">
+    <div class="hero-eyebrow" id="weekday-greeting">Guten Morgen</div>
+    <h1>Deine Welt. <br><span class="accent">In einem Blick.</span></h1>
+    <p class="hero-sub" id="full-date">—</p>
+  </section>
+
+  <!-- Day Grid: Wetter + Stundenplan -->
+  <div class="day-grid fade-in">
+    <div class="weather-card">
+      <div class="card-eyebrow">Wetter</div>
+      <div id="weather-content">
+        <div class="weather-loading">Lade Wetter…</div>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="card-eyebrow">Stundenplan</div>
+      <div id="schedule-content">
+        <div class="schedule-empty">Stundenplan nicht aktiviert.<br><span style="font-size: 12px;">Über das Menü oben links einrichten.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="fade-in">
+    <div class="portfolio-hero">
+      <div class="portfolio-hero-label">Dein Portfolio</div>
+      <div class="portfolio-hero-value" id="total-value">— €</div>
+      <div class="portfolio-hero-change" id="today-change-display">—</div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-tabs">
+        <button class="chart-tab" data-period="7" onclick="switchChartPeriod(7)">7T</button>
+        <button class="chart-tab active" data-period="30" onclick="switchChartPeriod(30)">30T</button>
+        <button class="chart-tab" data-period="90" onclick="switchChartPeriod(90)">90T</button>
+        <button class="chart-tab" data-period="365" onclick="switchChartPeriod(365)">1J</button>
+      </div>
+      <div class="chart-area" id="chart-area">
+        <div class="chart-loading">Lade Verlauf…</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Eingesetzt</div>
+        <div class="stat-value" id="invested">— €</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Gesamt G/V</div>
+        <div class="stat-value" id="total-gain">—</div>
+        <div class="stat-sub" id="total-gain-pct">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Positionen</div>
+        <div class="stat-value" id="position-count">0</div>
+      </div>
+    </div>
+
+    <div class="portfolio-list" id="portfolio-list">
+      <div class="empty-state">
+        Noch keine Positionen.<br>
+        <span style="color: var(--ink-tertiary); font-size: 14px;">Tippe unten auf "Hinzufügen" oder "Importieren"</span>
+      </div>
+    </div>
+
+    <div class="portfolio-actions">
+      <button class="action-btn primary" onclick="toggleAddForm()" id="add-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span id="add-btn-text">Hinzufügen</span>
+      </button>
+      <button class="action-btn" onclick="openExportModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        Exportieren
+      </button>
+      <button class="action-btn" onclick="openImportModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Importieren
+      </button>
+    </div>
+
+    <div class="add-form" id="add-form">
+      <input type="text" id="add-ticker" placeholder="Ticker (z.B. AAPL, WNUC.DE)">
+      <input type="text" id="add-name" placeholder="Name">
+      <input type="text" inputmode="decimal" id="add-qty" placeholder="Anzahl">
+      <input type="text" inputmode="decimal" id="add-cost" placeholder="Kaufkurs €">
+      <button class="btn" onclick="addPosition()">Speichern</button>
+      <div class="add-form-hint">Komma oder Punkt für Dezimalwerte</div>
+    </div>
+
+    <div class="info-pill">Daten werden nur lokal gespeichert</div>
+  </section>
+
+  <footer class="footer">
+    Persönliche Ausgabe · Daten lokal · Keine Anlageberatung
+  </footer>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3>Position bearbeiten</h3>
+    <div class="modal-field"><label>Ticker</label><input type="text" id="edit-ticker"></div>
+    <div class="modal-field"><label>Name</label><input type="text" id="edit-name"></div>
+    <div class="modal-field"><label>Anzahl Anteile</label><input type="text" inputmode="decimal" id="edit-qty"></div>
+    <div class="modal-field"><label>Kaufkurs €</label><input type="text" inputmode="decimal" id="edit-cost"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeEditModal()">Abbrechen</button>
+      <button class="btn" onclick="saveEdit()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="export-modal">
+  <div class="modal">
+    <h3>Portfolio exportieren</h3>
+    <p class="modal-desc">Speichere dein Portfolio als Datei oder kopiere den Code.</p>
+    <div class="modal-field">
+      <label>Dein Portfolio-Code</label>
+      <textarea id="export-text" readonly></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeExportModal()">Schließen</button>
+      <button class="btn btn-secondary" onclick="copyExport()">Kopieren</button>
+      <button class="btn" onclick="downloadExport()">Als Datei speichern</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <h3>Portfolio importieren</h3>
+    <p class="modal-desc">Füge einen Portfolio-Code ein oder lade eine Datei hoch.</p>
+    <div class="modal-field">
+      <label>Datei auswählen</label>
+      <input type="file" id="import-file" accept=".json,application/json" onchange="loadImportFile(event)">
+    </div>
+    <div class="modal-field">
+      <label>Oder Code einfügen</label>
+      <textarea id="import-text" placeholder='{"version":1,"positions":[...]}'></textarea>
+    </div>
+    <div class="modal-field">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="import-replace" style="width: auto; margin: 0;">
+        <span>Bestehende Positionen ersetzen</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeImportModal()">Abbrechen</button>
+      <button class="btn" onclick="doImport()">Importieren</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== Toast =====
+let toastTimer;
+function showToast(message, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
+// ===== CORS =====
+const CORS_PROXIES = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+];
+
+async function fetchWithFallback(targetUrl) {
+  for (const buildProxy of CORS_PROXIES) {
+    try {
+      const res = await fetch(buildProxy(targetUrl), { signal: AbortSignal.timeout(15000) });
+      if (res.ok) return res;
+    } catch(e) { continue; }
+  }
+  throw new Error('Alle Proxys fehlgeschlagen');
+}
+
+// ===== Theme =====
+const THEME_KEY = 'finn_theme';
+function getStoredTheme() { try { return localStorage.getItem(THEME_KEY); } catch(e) { return null; } }
+function applyTheme(theme) {
+  if (theme === 'dark' || theme === 'light') document.documentElement.setAttribute('data-theme', theme);
+  else document.documentElement.removeAttribute('data-theme');
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let newTheme;
+  if (!current) newTheme = systemDark ? 'light' : 'dark';
+  else if (current === 'dark') newTheme = 'light';
+  else newTheme = 'dark';
+  applyTheme(newTheme);
+  try { localStorage.setItem(THEME_KEY, newTheme); } catch(e) {}
+}
+applyTheme(getStoredTheme());
+
+// ===== Date =====
+const today = new Date();
+const weekdays = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const weekdaysShort = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const hour = today.getHours();
+let greeting = 'Guten Morgen';
+if (hour >= 12 && hour < 18) greeting = 'Guten Tag';
+else if (hour >= 18) greeting = 'Guten Abend';
+document.getElementById('weekday-greeting').textContent = `${greeting}, Finn`;
+document.getElementById('full-date').textContent = `${weekdays[today.getDay()]}, ${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
+document.getElementById('now-time').textContent = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+
+// ===== Menu =====
+function openMenu() {
+  document.getElementById('side-menu').classList.add('active');
+  document.getElementById('menu-overlay').classList.add('active');
+  document.body.classList.add('modal-open');
+}
+function closeMenu() {
+  document.getElementById('side-menu').classList.remove('active');
+  document.getElementById('menu-overlay').classList.remove('active');
+  document.body.classList.remove('modal-open');
+  closeSettings();
+}
+function openSettings(panel) {
+  document.getElementById('menu-main').style.display = 'none';
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+  const targetPanel = document.getElementById('settings-' + panel);
+  if (targetPanel) {
+    targetPanel.classList.add('active');
+    if (panel === 'alerts') {
+      document.getElementById('menu-title').textContent = 'Benachrichtigungen';
+      applyAlertSettingsToUI();
+    } else if (panel === 'schedule') {
+      document.getElementById('menu-title').textContent = 'Stundenplan';
+      applyScheduleSettingsToUI();
+    } else if (panel === 'about') {
+      document.getElementById('menu-title').textContent = 'Über';
+    }
+  }
+  if (!document.getElementById('side-menu').classList.contains('active')) openMenu();
+}
+function closeSettings() {
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('menu-main').style.display = 'block';
+  document.getElementById('menu-title').textContent = 'Menü';
+}
+
+// ===== Alert Settings =====
+const ALERT_SETTINGS_KEY = 'finn_alert_settings';
+const ALERT_DISMISSED_KEY = 'finn_alert_dismissed_v1';
+
+function loadAlertSettings() {
+  try { return JSON.parse(localStorage.getItem(ALERT_SETTINGS_KEY)) || { enabled: false, threshold: 10, reference: 'cost' }; }
+  catch(e) { return { enabled: false, threshold: 10, reference: 'cost' }; }
+}
+function saveAlertSettingsRaw(s) { localStorage.setItem(ALERT_SETTINGS_KEY, JSON.stringify(s)); }
+let alertSettings = loadAlertSettings();
+let alertedPositions = [];
+
+function loadDismissed() { try { return JSON.parse(localStorage.getItem(ALERT_DISMISSED_KEY)) || {}; } catch(e) { return {}; } }
+function saveDismissed(d) { localStorage.setItem(ALERT_DISMISSED_KEY, JSON.stringify(d)); }
+
+function toggleAlerts() {
+  alertSettings.enabled = !alertSettings.enabled;
+  document.getElementById('alert-toggle').classList.toggle('on', alertSettings.enabled);
+  updateAlertStatus();
+}
+function setThreshold(value) {
+  alertSettings.threshold = value;
+  document.querySelectorAll('.threshold-btn[data-value]').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.value) === value);
+  });
+  document.getElementById('threshold-input').value = '';
+}
+function setReference(ref) {
+  alertSettings.reference = ref;
+  document.querySelectorAll('.threshold-btn[data-ref]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.ref === ref);
+  });
+}
+function saveAlertSettings() {
+  const customInput = document.getElementById('threshold-input').value.trim();
+  if (customInput) {
+    const customValue = parseFloat(customInput.replace(',', '.'));
+    if (isNaN(customValue) || customValue <= 0 || customValue >= 100) {
+      showToast('Bitte gültigen Prozentwert eingeben (1-99)', 'error');
+      return;
+    }
+    alertSettings.threshold = customValue;
+  }
+  saveAlertSettingsRaw(alertSettings);
+  updateAlertStatus();
+  showToast('Einstellungen gespeichert', 'success');
+  closeSettings(); closeMenu();
+  setTimeout(checkAlerts, 100);
+}
+function updateAlertStatus() {
+  const sub = document.getElementById('alert-status-sub');
+  if (alertSettings.enabled) {
+    const refText = alertSettings.reference === 'cost' ? 'vom Kaufkurs' : 'vom Vortag';
+    sub.textContent = `Ab -${alertSettings.threshold}% ${refText}`;
+  } else { sub.textContent = 'Aus'; }
+}
+function applyAlertSettingsToUI() {
+  document.getElementById('alert-toggle').classList.toggle('on', alertSettings.enabled);
+  const presets = [5, 10, 15, 20];
+  if (presets.includes(alertSettings.threshold)) {
+    document.querySelectorAll('.threshold-btn[data-value]').forEach(btn => {
+      btn.classList.toggle('active', parseFloat(btn.dataset.value) === alertSettings.threshold);
+    });
+    document.getElementById('threshold-input').value = '';
+  } else {
+    document.querySelectorAll('.threshold-btn[data-value]').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('threshold-input').value = alertSettings.threshold;
+  }
+  document.querySelectorAll('.threshold-btn[data-ref]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.ref === alertSettings.reference);
+  });
+}
+function checkAlerts() {
+  if (!alertSettings.enabled) {
+    document.getElementById('alert-banner').classList.remove('show');
+    document.getElementById('menu-toggle-btn').classList.remove('has-alert');
+    alertedPositions = []; return;
+  }
+  const portfolio = loadPortfolio();
+  if (portfolio.length === 0) {
+    document.getElementById('alert-banner').classList.remove('show');
+    return;
+  }
+  const dismissed = loadDismissed();
+  const alerts = [];
+  portfolio.forEach(pos => {
+    const cached = lastQuotes[pos.ticker];
+    if (!cached) return;
+    let lossPct;
+    if (alertSettings.reference === 'cost') lossPct = ((pos.cost - cached.price) / pos.cost) * 100;
+    else lossPct = ((cached.previousClose - cached.price) / cached.previousClose) * 100;
+    if (lossPct >= alertSettings.threshold) {
+      const tier = Math.floor(lossPct);
+      const dismissKey = `${pos.id}_${alertSettings.reference}_${tier}_${alertSettings.threshold}`;
+      if (!dismissed[dismissKey]) {
+        alerts.push({
+          name: pos.name, ticker: pos.ticker, lossPct,
+          dismissKey, currentPrice: cached.price,
+          referencePrice: alertSettings.reference === 'cost' ? pos.cost : cached.previousClose
+        });
+      }
+    }
+  });
+  alertedPositions = alerts;
+  renderAlertBanner(alerts);
+  updateMenuAlertBadge();
+}
+function renderAlertBanner(alerts) {
+  const banner = document.getElementById('alert-banner');
+  const headline = document.getElementById('alert-headline');
+  const body = document.getElementById('alert-body');
+  if (alerts.length === 0) { banner.classList.remove('show'); return; }
+  const refText = alertSettings.reference === 'cost' ? 'gegenüber Kaufkurs' : 'gegenüber Vortag';
+  if (alerts.length === 1) {
+    headline.textContent = `${alerts[0].name} ist gefallen`;
+    body.innerHTML = `<strong>−${alerts[0].lossPct.toFixed(2)}%</strong> ${refText} (auf ${alerts[0].currentPrice.toFixed(2)} €). Schwellwert: −${alertSettings.threshold}%.`;
+  } else {
+    headline.textContent = `${alerts.length} Positionen sind gefallen`;
+    body.innerHTML = `Folgende Positionen liegen unter deinem Schwellwert von −${alertSettings.threshold}% ${refText}:<ul>${
+      alerts.map(a => `<li><strong>${a.name}</strong>: −${a.lossPct.toFixed(2)}% (${a.currentPrice.toFixed(2)} €)</li>`).join('')
+    }</ul>`;
+  }
+  banner.classList.add('show');
+}
+function dismissAlerts() {
+  const dismissed = loadDismissed();
+  alertedPositions.forEach(a => { dismissed[a.dismissKey] = true; });
+  saveDismissed(dismissed);
+  document.getElementById('alert-banner').classList.remove('show');
+  alertedPositions = [];
+  updateMenuAlertBadge();
+  showToast('Warnung verstanden');
+}
+
+function updateMenuAlertBadge() {
+  const hasPortfolioAlert = alertedPositions.length > 0;
+  const hasScheduleAlert = scheduleAlerts.length > 0;
+  document.getElementById('menu-toggle-btn').classList.toggle('has-alert', hasPortfolioAlert || hasScheduleAlert);
+}
+
+// ===== Schedule Settings =====
+const SCHEDULE_SETTINGS_KEY = 'finn_schedule_settings';
+const SCHEDULE_CACHE_KEY = 'finn_schedule_cache';
+
+function loadScheduleSettings() {
+  try { return JSON.parse(localStorage.getItem(SCHEDULE_SETTINGS_KEY)) || { enabled: false, studentId: '', classId: '', baseUrl: '' }; }
+  catch(e) { return { enabled: false, studentId: '', classId: '', baseUrl: '' }; }
+}
+function saveScheduleSettingsRaw(s) { localStorage.setItem(SCHEDULE_SETTINGS_KEY, JSON.stringify(s)); }
+let scheduleSettings = loadScheduleSettings();
+let scheduleAlerts = [];
+let scheduleNotice = '';
+
+function toggleSchedule() {
+  scheduleSettings.enabled = !scheduleSettings.enabled;
+  document.getElementById('schedule-toggle').classList.toggle('on', scheduleSettings.enabled);
+}
+
+function applyScheduleSettingsToUI() {
+  document.getElementById('schedule-toggle').classList.toggle('on', scheduleSettings.enabled);
+  document.getElementById('schedule-student-id').value = scheduleSettings.studentId || '';
+  document.getElementById('schedule-class-id').value = scheduleSettings.classId || '';
+  document.getElementById('schedule-base-url').value = scheduleSettings.baseUrl || '';
+}
+
+function saveScheduleSettings() {
+  scheduleSettings.studentId = document.getElementById('schedule-student-id').value.trim();
+  scheduleSettings.classId = document.getElementById('schedule-class-id').value.trim();
+  scheduleSettings.baseUrl = document.getElementById('schedule-base-url').value.trim();
+  scheduleSettings.baseUrl = scheduleSettings.baseUrl.replace(/default\.htm[l]?$/i, '');
+  if (scheduleSettings.baseUrl && !scheduleSettings.baseUrl.endsWith('/')) scheduleSettings.baseUrl += '/';
+
+  saveScheduleSettingsRaw(scheduleSettings);
+  updateScheduleStatus();
+  showToast('Stundenplan-Einstellungen gespeichert', 'success');
+  closeSettings(); closeMenu();
+  setTimeout(loadSchedule, 100);
+}
+
+function updateScheduleStatus() {
+  const sub = document.getElementById('schedule-status-sub');
+  if (!scheduleSettings.enabled) sub.textContent = 'Aus';
+  else if (!scheduleSettings.studentId || !scheduleSettings.classId || !scheduleSettings.baseUrl) sub.textContent = 'Konfiguration unvollständig';
+  else sub.textContent = `Aktiv · ${scheduleSettings.studentId}`;
+}
+
+// ===== Schedule Loading =====
+function timeForLesson(num) {
+  // Approximate Untis lesson times for HOGA Schulen (45min lessons)
+  const times = {
+    0: '7:20',  1: '8:15',  2: '9:00',
+    3: '10:00', 4: '10:45', 5: '11:40',
+    6: '12:25', 7: '13:55', 8: '14:40',
+    9: '16:00', 10: '16:45'
+  };
+  return times[num] || '';
+}
+
+function endTimeForLesson(num) {
+  const times = {
+    0: '8:05',  1: '9:00',  2: '9:45',
+    3: '10:45', 4: '11:30', 5: '12:25',
+    6: '13:10', 7: '14:40', 8: '15:25',
+    9: '16:45', 10: '17:30'
+  };
+  return times[num] || '';
+}
+
+function isLessonNow(lessonNum, now) {
+  const start = timeForLesson(lessonNum);
+  const end = endTimeForLesson(lessonNum);
+  if (!start || !end) return false;
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  const startMin = sh * 60 + sm;
+  const endMin = eh * 60 + em;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  return nowMin >= startMin && nowMin < endMin;
+}
+
+async function fetchSchedulePage(url) {
+  const urls = [
+    url,
+    `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+  ];
+  for (const candidate of urls) {
+    try {
+      const res = await fetch(candidate, { signal: AbortSignal.timeout(15000) });
+      if (!res.ok) continue;
+      const html = await res.text();
+      if (isValidScheduleHtml(url, html)) return html;
+    } catch(e) { continue; }
+  }
+  console.error('Schedule fetch error', url);
+  return null;
+}
+
+function isValidScheduleHtml(url, html) {
+  if (!html || html.length < 200) return false;
+  const lower = html.slice(0, 500).toLowerCase();
+  if (lower.includes('"error"') || lower.includes('error code:') || lower.includes('upgrade at')) return false;
+  if (url.includes('frames/navbar.htm')) return html.includes('var classes') && html.includes('var students');
+  return html.includes('<TABLE') || html.includes('<table');
+}
+
+function untisNumber(n) {
+  return String(n).padStart(5, '0');
+}
+
+function getIsoWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function parseUntisArray(html, name) {
+  const match = html.match(new RegExp(`var\\s+${name}\\s*=\\s*(\\[[\\s\\S]*?\\]);`));
+  if (!match) return [];
+  try { return JSON.parse(match[1]); }
+  catch(e) {
+    return [...match[1].matchAll(/"([^"]*)"/g)].map(m => m[1]);
+  }
+}
+
+function parseUntisWeeks(html) {
+  return [...html.matchAll(/<option\s+value="(\d+)"/gi)].map(m => m[1]);
+}
+
+function normalizeScheduleName(value) {
+  return (value || '')
+    .toLowerCase()
+    .replace(/[‐‑‒–—−]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getScheduleDisplayDate(now = new Date()) {
+  const target = new Date(now);
+  const day = target.getDay();
+  if (day === 0) {
+    target.setDate(target.getDate() + 1);
+  } else if (day === 6) {
+    target.setDate(target.getDate() + 2);
+  } else if (target.getHours() >= 17) {
+    target.setDate(target.getDate() + 1);
+    if (target.getDay() === 6) target.setDate(target.getDate() + 2);
+  }
+  return target;
+}
+
+async function getUntisMeta(baseUrl) {
+  const html = await fetchSchedulePage(baseUrl + 'frames/navbar.htm');
+  if (!html) throw new Error('Untis-Navigation nicht gefunden');
+  const weeks = parseUntisWeeks(html);
+  const currentWeek = String(getIsoWeek(getScheduleDisplayDate()));
+  return {
+    week: weeks.includes(currentWeek) ? currentWeek : weeks[0],
+    classes: parseUntisArray(html, 'classes'),
+    students: parseUntisArray(html, 'students')
+  };
+}
+
+function findUntisIndex(names, requestedName) {
+  const wanted = normalizeScheduleName(requestedName);
+  return names.findIndex(name => normalizeScheduleName(name) === wanted);
+}
+
+function buildUntisUrl(baseUrl, week, type, names, requestedName) {
+  const index = findUntisIndex(names, requestedName);
+  if (index === -1) return null;
+  const elementNumber = index + 1;
+  return `${baseUrl}${week}/${type}/${type}${untisNumber(elementNumber)}.htm`;
+}
+
+function summarizeFoundIds(label, values, requested) {
+  const requestedPrefix = normalizeScheduleName(requested).slice(0, 2);
+  const nearby = values
+    .filter(v => normalizeScheduleName(v).startsWith(requestedPrefix))
+    .slice(0, 12);
+  const sample = (nearby.length ? nearby : values.slice(0, 12)).join(', ');
+  return `${label} gefunden (${values.length}): ${sample || 'keine'}`;
+}
+
+function getDirectTableRows(table) {
+  return Array.from(table.querySelectorAll('tr')).filter(row => {
+    const parent = row.parentElement;
+    return parent && parent.closest('table') === table;
+  });
+}
+
+function getDirectTableCells(row) {
+  return Array.from(row.children).filter(cell => /^(TD|TH)$/i.test(cell.tagName));
+}
+
+function cleanLessonToken(value) {
+  return (value || '').replace(/^\*/, '').replace(/[?]/g, '').trim();
+}
+
+function isTeacherToken(value) {
+  return /^[A-ZÄÖÜ�]{2,5}$/.test(value) && value !== '---';
+}
+
+function isRoomToken(value) {
+  return /^\d{2,4}$/.test(value)
+    || /^[A-ZÄÖÜ�]+\s?\d+[A-Z]?$/i.test(value)
+    || /^TH\b/i.test(value);
+}
+
+// Parse the timetable HTML and extract lessons for given subjects
+function parseTimetable(html, mySubjects, classMode) {
+  // mySubjects: array of subject codes (with correct case) like ['EN1','d1','ge5','ma6'...]
+  // classMode: true if we're parsing the class timetable (to get rooms/teachers)
+  // Returns: { 'monday': [{lesson, subject, teacher, room, raw}], ...}
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  // Find the main timetable - typically a table with rows for hours and columns for days
+  const tables = doc.querySelectorAll('table');
+  let mainTable = null;
+  for (const t of tables) {
+    const rows = getDirectTableRows(t);
+    if (rows.length >= 8) { // Should have header + at least 8 hours
+      // Check if it looks like a timetable (has Mo, Di, Mi, Do, Fr in header)
+      const headerText = (rows[0]?.textContent || '').toLowerCase();
+      if (headerText.includes('mo') && headerText.includes('di')) {
+        mainTable = t;
+        break;
+      }
+    }
+  }
+
+  if (!mainTable) return null;
+
+  const result = { mo: [], di: [], mi: [], do: [], fr: [] };
+
+  const rows = getDirectTableRows(mainTable);
+
+  // Build a 2D grid representing the timetable, taking colspan/rowspan into account
+  const grid = []; // grid[rowIndex][colIndex] = cell info or null
+
+  rows.forEach((row, rowIdx) => {
+    if (!grid[rowIdx]) grid[rowIdx] = [];
+    let colIdx = 0;
+    const cells = getDirectTableCells(row);
+    cells.forEach(cell => {
+      // Skip already-filled positions (from rowspan above)
+      while (grid[rowIdx][colIdx] !== undefined) colIdx++;
+
+      const colspan = parseInt(cell.getAttribute('colspan') || '1');
+      const rowspan = parseInt(cell.getAttribute('rowspan') || '1');
+      const text = cell.textContent.trim();
+      const html = cell.innerHTML;
+
+      const cellInfo = { text, html, rowspan, colspan, rowIdx };
+
+      for (let r = 0; r < rowspan; r++) {
+        if (!grid[rowIdx + r]) grid[rowIdx + r] = [];
+        for (let c = 0; c < colspan; c++) {
+          grid[rowIdx + r][colIdx + c] = (r === 0 && c === 0) ? cellInfo : { ...cellInfo, isContinuation: true };
+        }
+      }
+      colIdx += colspan;
+    });
+  });
+
+  // Now find which row contains the day headers
+  let headerRowIdx = -1;
+  let dayRanges = {}; // dayKey -> { start, end }
+  for (let i = 0; i < Math.min(grid.length, 5); i++) {
+    const row = grid[i];
+    if (!row) continue;
+    let foundDays = 0;
+    for (let c = 0; c < row.length; c++) {
+      const cell = row[c];
+      if (!cell || cell.isContinuation) continue;
+      const t = cell.text.toLowerCase();
+      let dayKey = null;
+      if (t === 'mo' || t === 'montag') dayKey = 'mo';
+      else if (t === 'di' || t === 'dienstag') dayKey = 'di';
+      else if (t === 'mi' || t === 'mittwoch') dayKey = 'mi';
+      else if (t === 'do' || t === 'donnerstag') dayKey = 'do';
+      else if (t === 'fr' || t === 'freitag') dayKey = 'fr';
+      if (dayKey) {
+        dayRanges[dayKey] = { start: c, end: c + cell.colspan };
+        foundDays++;
+      }
+    }
+    if (foundDays >= 4) { headerRowIdx = i; break; }
+  }
+
+  if (headerRowIdx === -1) return null;
+
+  // Iterate data rows: each row should start with an hour number
+  for (let r = headerRowIdx + 1; r < grid.length; r++) {
+    const row = grid[r];
+    if (!row) continue;
+
+    // First non-empty cell should be the lesson number
+    let lessonNum = null;
+    for (let c = 0; c < row.length; c++) {
+      const cell = row[c];
+      if (!cell || cell.isContinuation) continue;
+      const num = parseInt(cell.text);
+      if (!isNaN(num) && num >= 0 && num <= 12) {
+        lessonNum = num;
+        break;
+      }
+    }
+    if (lessonNum === null) continue;
+
+    // For each day span, check every column because Untis class plans split days into groups
+    for (const [dayKey, range] of Object.entries(dayRanges)) {
+      for (let colIdx = range.start; colIdx < range.end; colIdx++) {
+        const cell = row[colIdx];
+        if (!cell || cell.isContinuation) continue;
+
+        const text = cell.text;
+        if (!text) continue;
+
+        // Try to find matching subject
+        // Subject text might be like "EN1\nBOS\n319" or "*EN1" or just "EN1"
+        // Or for class plan: cells contain SUBJECT, TEACHER, ROOM (newline separated)
+        let subjectFound = null;
+        let teacherFound = null;
+        let roomFound = null;
+        let extra = '';
+
+        // Try to extract structured data
+        // Class plan: usually 3 lines: SUBJECT / TEACHER / ROOM
+        // Student plan: just *SUBJECT (sometimes more)
+        const lines = cell.html
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/(?:td|tr|div|p)>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .split('\n')
+          .map(s => cleanLessonToken(s))
+          .filter(s => s.length > 0);
+
+        // If we have mySubjects, check if any of them match
+        if (mySubjects && mySubjects.length > 0) {
+          for (const subj of mySubjects) {
+            // The subject name might appear with or without leading * and case-sensitive
+            const cleanSubj = cleanLessonToken(subj);
+            // Check exact match in any line, case-sensitive
+            for (const line of lines) {
+              if (line === cleanSubj) {
+                subjectFound = cleanSubj;
+                break;
+              }
+            }
+            if (subjectFound) break;
+          }
+        } else {
+          // No filter - just take first line as subject
+          if (lines[0]) subjectFound = lines[0];
+        }
+
+        if (subjectFound) {
+          // Try to extract teacher and room from remaining lines
+          // Current Untis class cells are nested tables: subject / teacher / room.
+          for (const line of lines) {
+            if (line === subjectFound || line === '---') continue;
+            if (isTeacherToken(line) && !teacherFound) {
+              teacherFound = line;
+            }
+            else if (isRoomToken(line)) {
+              if (!roomFound) roomFound = line;
+            }
+            else {
+              extra += (extra ? ' ' : '') + line;
+            }
+          }
+
+          result[dayKey].push({
+            lesson: lessonNum,
+            subject: subjectFound,
+            teacher: teacherFound || '',
+            room: roomFound || '',
+            extra: extra,
+            colspan: cell.colspan
+          });
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+async function loadSchedule() {
+  if (!scheduleSettings.enabled) {
+    document.getElementById('schedule-content').innerHTML = `
+      <div class="schedule-empty">Stundenplan nicht aktiviert.<br><span style="font-size: 12px;">Über das Menü oben links einrichten.</span></div>
+    `;
+    return;
+  }
+
+  if (!scheduleSettings.studentId || !scheduleSettings.classId || !scheduleSettings.baseUrl) {
+    document.getElementById('schedule-content').innerHTML = `
+      <div class="schedule-error">
+        Konfiguration unvollständig. Bitte Schüler-ID, Klassen-ID und URL eintragen.
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById('schedule-content').innerHTML = '<div class="weather-loading">Lade Stundenplan…</div>';
+  scheduleNotice = '';
+
+  try {
+    const meta = await getUntisMeta(scheduleSettings.baseUrl);
+    const studentUrl = buildUntisUrl(scheduleSettings.baseUrl, meta.week, 's', meta.students, scheduleSettings.studentId);
+    const classUrl = buildUntisUrl(scheduleSettings.baseUrl, meta.week, 'c', meta.classes, scheduleSettings.classId);
+    if (!classUrl) {
+      throw new Error([
+        `Klasse "${scheduleSettings.classId}" nicht in Untis gefunden.`,
+        summarizeFoundIds('Klassen', meta.classes, scheduleSettings.classId),
+        summarizeFoundIds('Schüler-IDs', meta.students, scheduleSettings.studentId)
+      ].join('<br>'));
+    }
+
+    const classHtml = await fetchSchedulePage(classUrl);
+    if (!classHtml) throw new Error('Klassenplan nicht gefunden');
+
+    let enrichedSchedule = null;
+    let studentHtml = null;
+    if (studentUrl) studentHtml = await fetchSchedulePage(studentUrl);
+
+    // Parse student plan to get the list of subjects
+    const studentParse = studentHtml ? parseTimetable(studentHtml, null, false) : null;
+    if (studentParse) {
+      // Extract unique subject codes from student plan
+      const mySubjects = new Set();
+      for (const day of Object.values(studentParse)) {
+        day.forEach(l => mySubjects.add(l.subject));
+      }
+
+      // Parse class plan filtering by my subjects (case-sensitive!)
+      enrichedSchedule = studentParse;
+      const classParse = parseTimetable(classHtml, [...mySubjects], true);
+      if (classParse) {
+        // Merge: for each lesson in studentParse, find matching in classParse and add teacher/room
+        for (const dayKey of Object.keys(enrichedSchedule)) {
+          enrichedSchedule[dayKey] = enrichedSchedule[dayKey].map(lesson => {
+            const match = classParse[dayKey]?.find(l => l.lesson === lesson.lesson && l.subject === lesson.subject);
+            if (match) {
+              return { ...lesson, teacher: match.teacher || lesson.teacher, room: match.room || lesson.room, extra: match.extra || lesson.extra };
+            }
+            return lesson;
+          });
+        }
+      }
+    } else {
+      enrichedSchedule = parseTimetable(classHtml, null, true);
+      if (!enrichedSchedule) throw new Error('Klassenplan konnte nicht gelesen werden');
+      if (!studentUrl) {
+        scheduleNotice = [
+          `Schüler-ID "${scheduleSettings.studentId}" nicht in Untis gefunden. Zeige Klassenplan "${scheduleSettings.classId}".`,
+          summarizeFoundIds('Schüler-IDs', meta.students, scheduleSettings.studentId),
+          summarizeFoundIds('Klassen', meta.classes, scheduleSettings.classId)
+        ].join('<br>');
+        showToast(`Schüler-ID "${scheduleSettings.studentId}" nicht gefunden. Zeige Klassenplan.`, 'error');
+      } else {
+        scheduleNotice = `Schülerplan konnte nicht gelesen werden. Zeige Klassenplan "${scheduleSettings.classId}".`;
+        showToast('Schülerplan nicht lesbar. Zeige Klassenplan.', 'error');
+      }
+    }
+
+    // Compare with cached version for changes
+    const oldSchedule = getCachedSchedule();
+    const changes = detectScheduleChanges(oldSchedule, enrichedSchedule);
+    cacheSchedule(enrichedSchedule);
+    scheduleAlerts = changes;
+    renderScheduleBanner(changes);
+    updateMenuAlertBadge();
+
+    // Render today's schedule
+    renderSchedule(enrichedSchedule);
+  } catch(e) {
+    console.error('Schedule error:', e);
+    document.getElementById('schedule-content').innerHTML = `
+      <div class="schedule-error">
+        <strong>Stundenplan konnte nicht geladen werden.</strong><br>
+        ${e.message || 'Unbekannter Fehler'}
+      </div>
+    `;
+  }
+}
+
+function getCachedSchedule() {
+  try { return JSON.parse(localStorage.getItem(SCHEDULE_CACHE_KEY)); }
+  catch(e) { return null; }
+}
+function cacheSchedule(s) { localStorage.setItem(SCHEDULE_CACHE_KEY, JSON.stringify(s)); }
+
+function detectScheduleChanges(oldS, newS) {
+  if (!oldS) return [];
+  const changes = [];
+  const days = ['mo','di','mi','do','fr'];
+  for (const day of days) {
+    const oldLessons = oldS[day] || [];
+    const newLessons = newS[day] || [];
+
+    // Find changes per lesson number
+    const allLessonNums = new Set([...oldLessons.map(l => l.lesson), ...newLessons.map(l => l.lesson)]);
+    for (const num of allLessonNums) {
+      const oldL = oldLessons.find(l => l.lesson === num);
+      const newL = newLessons.find(l => l.lesson === num);
+      if (oldL && !newL) changes.push({ day, lesson: num, type: 'cancel', subject: oldL.subject });
+      else if (!oldL && newL) changes.push({ day, lesson: num, type: 'new', subject: newL.subject });
+      else if (oldL && newL) {
+        if (oldL.room !== newL.room && newL.room) {
+          changes.push({ day, lesson: num, type: 'room', subject: newL.subject, oldRoom: oldL.room, newRoom: newL.room });
+        }
+        if (oldL.teacher !== newL.teacher && newL.teacher) {
+          changes.push({ day, lesson: num, type: 'teacher', subject: newL.subject, oldTeacher: oldL.teacher, newTeacher: newL.teacher });
+        }
+        if (oldL.extra !== newL.extra && newL.extra) {
+          changes.push({ day, lesson: num, type: 'note', subject: newL.subject, note: newL.extra });
+        }
+      }
+    }
+  }
+  return changes;
+}
+
+const SCHEDULE_DISMISSED_KEY = 'finn_schedule_dismissed';
+function dismissScheduleAlerts() {
+  document.getElementById('schedule-banner').classList.remove('show');
+  scheduleAlerts = [];
+  updateMenuAlertBadge();
+  showToast('Verstanden');
+}
+
+function renderScheduleBanner(changes) {
+  const banner = document.getElementById('schedule-banner');
+  const body = document.getElementById('schedule-banner-body');
+  if (changes.length === 0) { banner.classList.remove('show'); return; }
+
+  const dayNames = { mo: 'Montag', di: 'Dienstag', mi: 'Mittwoch', do: 'Donnerstag', fr: 'Freitag' };
+  const items = changes.map(c => {
+    const day = dayNames[c.day];
+    const lessonTime = timeForLesson(c.lesson);
+    let msg = `${day} ${lessonTime}, ${c.subject}: `;
+    if (c.type === 'cancel') msg += 'fällt aus';
+    else if (c.type === 'new') msg += 'neue Stunde';
+    else if (c.type === 'room') msg += `Raum ${c.oldRoom || '?'} → ${c.newRoom}`;
+    else if (c.type === 'teacher') msg += `Lehrer ${c.oldTeacher || '?'} → ${c.newTeacher}`;
+    else if (c.type === 'note') msg += `Notiz: ${c.note}`;
+    return `<li>${msg}</li>`;
+  });
+  body.innerHTML = `<ul>${items.join('')}</ul>`;
+  banner.classList.add('show');
+}
+
+let currentScheduleDay = null;
+
+function renderSchedule(schedule) {
+  const now = new Date();
+  let day = now.getDay(); // 0=Sun, 1=Mon...
+  // After 17:00 or weekend, show next school day
+  if (day === 0) day = 1; // Sun → Mo
+  else if (day === 6) day = 1; // Sat → Mo
+  else if (now.getHours() >= 17) {
+    day = day + 1;
+    if (day === 6) day = 1;
+  }
+
+  const dayKey = ['so','mo','di','mi','do','fr','sa'][day];
+  currentScheduleDay = dayKey;
+  const lessons = schedule[dayKey] || [];
+
+  const dayNames = { mo: 'Montag', di: 'Dienstag', mi: 'Mittwoch', do: 'Donnerstag', fr: 'Freitag' };
+
+  // Group consecutive same-subject lessons
+  const grouped = [];
+  for (const l of lessons) {
+    const prev = grouped[grouped.length - 1];
+    if (prev && prev.subject === l.subject && prev.endLesson === l.lesson - 1
+        && prev.teacher === l.teacher && prev.room === l.room) {
+      prev.endLesson = l.lesson;
+    } else {
+      grouped.push({ ...l, startLesson: l.lesson, endLesson: l.lesson });
+    }
+  }
+
+  const isToday = day === now.getDay();
+  // Tabs for switching days
+  const tabsHtml = `
+    <div class="schedule-tabs">
+      ${['mo','di','mi','do','fr'].map(d => `
+        <button class="schedule-tab ${d === dayKey ? 'active' : ''}" onclick="switchScheduleDay('${d}')">${d.toUpperCase()}</button>
+      `).join('')}
+    </div>
+  `;
+
+  let html = (scheduleNotice ? `<div class="schedule-error" style="margin-bottom: 12px;">${scheduleNotice}</div>` : '') + tabsHtml;
+  if (grouped.length === 0) {
+    html += `<div class="schedule-empty">Keine Stunden am ${dayNames[dayKey]}</div>`;
+  } else {
+    html += '<div class="schedule-list">';
+    for (const l of grouped) {
+      const startTime = timeForLesson(l.startLesson);
+      const endTime = endTimeForLesson(l.endLesson);
+      const isNow = isToday && [l.startLesson, l.endLesson].some(num => isLessonNow(num, now));
+      const lessonRange = l.startLesson === l.endLesson ? `${l.startLesson}.` : `${l.startLesson}.-${l.endLesson}.`;
+      html += `
+        <div class="schedule-item ${isNow ? 'now' : ''}">
+          <div class="schedule-time">${startTime}<br><span style="font-size:11px;opacity:0.7">${lessonRange}</span></div>
+          <div>
+            <div class="schedule-subject">${l.subject}</div>
+            <div class="schedule-meta">${l.teacher || ''}${l.extra ? ' · ' + l.extra : ''}</div>
+          </div>
+          <div class="schedule-room">${l.room || ''}</div>
+        </div>
+      `;
+    }
+    html += '</div>';
+  }
+
+  document.getElementById('schedule-content').innerHTML = html;
+}
+
+function switchScheduleDay(dayKey) {
+  const cached = getCachedSchedule();
+  if (!cached) return;
+  currentScheduleDay = dayKey;
+  // Re-render with chosen day
+  const dayNames = { mo: 'Montag', di: 'Dienstag', mi: 'Mittwoch', do: 'Donnerstag', fr: 'Freitag' };
+  const lessons = cached[dayKey] || [];
+  const grouped = [];
+  for (const l of lessons) {
+    const prev = grouped[grouped.length - 1];
+    if (prev && prev.subject === l.subject && prev.endLesson === l.lesson - 1
+        && prev.teacher === l.teacher && prev.room === l.room) {
+      prev.endLesson = l.lesson;
+    } else {
+      grouped.push({ ...l, startLesson: l.lesson, endLesson: l.lesson });
+    }
+  }
+
+  const now = new Date();
+  const todayKey = ['so','mo','di','mi','do','fr','sa'][now.getDay()];
+  const isToday = dayKey === todayKey;
+
+  const tabsHtml = `
+    <div class="schedule-tabs">
+      ${['mo','di','mi','do','fr'].map(d => `
+        <button class="schedule-tab ${d === dayKey ? 'active' : ''}" onclick="switchScheduleDay('${d}')">${d.toUpperCase()}</button>
+      `).join('')}
+    </div>
+  `;
+
+  let html = (scheduleNotice ? `<div class="schedule-error" style="margin-bottom: 12px;">${scheduleNotice}</div>` : '') + tabsHtml;
+  if (grouped.length === 0) {
+    html += `<div class="schedule-empty">Keine Stunden am ${dayNames[dayKey]}</div>`;
+  } else {
+    html += '<div class="schedule-list">';
+    for (const l of grouped) {
+      const startTime = timeForLesson(l.startLesson);
+      const isNow = isToday && [l.startLesson, l.endLesson].some(num => isLessonNow(num, now));
+      const lessonRange = l.startLesson === l.endLesson ? `${l.startLesson}.` : `${l.startLesson}.-${l.endLesson}.`;
+      html += `
+        <div class="schedule-item ${isNow ? 'now' : ''}">
+          <div class="schedule-time">${startTime}<br><span style="font-size:11px;opacity:0.7">${lessonRange}</span></div>
+          <div>
+            <div class="schedule-subject">${l.subject}</div>
+            <div class="schedule-meta">${l.teacher || ''}${l.extra ? ' · ' + l.extra : ''}</div>
+          </div>
+          <div class="schedule-room">${l.room || ''}</div>
+        </div>
+      `;
+    }
+    html += '</div>';
+  }
+  document.getElementById('schedule-content').innerHTML = html;
+}
+
+// ===== Weather =====
+function weatherIconFromCode(code, isDay) {
+  // WMO weather codes
+  if (code === 0) return isDay ? '☀️' : '🌙';
+  if (code <= 2) return isDay ? '🌤️' : '☁️';
+  if (code === 3) return '☁️';
+  if (code <= 49) return '🌫️';
+  if (code <= 57) return '🌦️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '🌨️';
+  if (code <= 82) return '🌧️';
+  if (code <= 86) return '🌨️';
+  if (code <= 99) return '⛈️';
+  return '🌡️';
+}
+
+function weatherDescFromCode(code) {
+  if (code === 0) return 'Klar';
+  if (code === 1) return 'Überwiegend klar';
+  if (code === 2) return 'Teils bewölkt';
+  if (code === 3) return 'Bewölkt';
+  if (code === 45 || code === 48) return 'Nebel';
+  if (code >= 51 && code <= 57) return 'Sprühregen';
+  if (code >= 61 && code <= 67) return 'Regen';
+  if (code >= 71 && code <= 77) return 'Schnee';
+  if (code >= 80 && code <= 82) return 'Regenschauer';
+  if (code >= 85 && code <= 86) return 'Schneeschauer';
+  if (code >= 95) return 'Gewitter';
+  return 'Wetter';
+}
+
+async function fetchWeather(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1`;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('Weather fetch failed');
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function reverseGeocode(lat, lon) {
+  try {
+    const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=de&format=json`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.results?.[0]?.name || null;
+  } catch(e) { return null; }
+}
+
+const WEATHER_LOCATION_KEY = 'finn_weather_location';
+
+async function loadWeather() {
+  const container = document.getElementById('weather-content');
+
+  // Try to use cached location first
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(WEATHER_LOCATION_KEY)); } catch(e) {}
+
+  if (cached && cached.lat && cached.lon) {
+    showWeather(cached.lat, cached.lon, cached.name);
+    // Refresh location occasionally
+    return;
+  }
+
+  // Request location
+  if (!navigator.geolocation) {
+    container.innerHTML = `<div class="weather-error">Wetter nicht verfügbar. Browser unterstützt keine Standortabfrage.</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="weather-error">
+      Wetter benötigt deinen Standort.<br>
+      <button class="weather-permission-btn" onclick="requestLocation()">Standort erlauben</button>
+    </div>
+  `;
+}
+
+function requestLocation() {
+  const container = document.getElementById('weather-content');
+  container.innerHTML = '<div class="weather-loading">Standort wird ermittelt…</div>';
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      const name = await reverseGeocode(lat, lon) || 'Dein Standort';
+      try { localStorage.setItem(WEATHER_LOCATION_KEY, JSON.stringify({ lat, lon, name })); } catch(e) {}
+      showWeather(lat, lon, name);
+    },
+    err => {
+      container.innerHTML = `
+        <div class="weather-error">
+          Standort wurde nicht erlaubt.<br>
+          <button class="weather-permission-btn" onclick="requestLocation()">Erneut versuchen</button>
+        </div>
+      `;
+    },
+    { timeout: 10000, maximumAge: 600000 }
+  );
+}
+
+async function showWeather(lat, lon, name) {
+  const container = document.getElementById('weather-content');
+  const data = await fetchWeather(lat, lon);
+  if (!data) {
+    container.innerHTML = `<div class="weather-error">Wetterdaten konnten nicht geladen werden.</div>`;
+    return;
+  }
+  const cur = data.current;
+  const daily = data.daily;
+  const icon = weatherIconFromCode(cur.weather_code, cur.is_day);
+  const desc = weatherDescFromCode(cur.weather_code);
+  const temp = Math.round(cur.temperature_2m);
+  const tempMax = Math.round(daily.temperature_2m_max[0]);
+  const tempMin = Math.round(daily.temperature_2m_min[0]);
+  const rain = daily.precipitation_probability_max[0];
+
+  container.innerHTML = `
+    <div class="weather-main">
+      <div>
+        <div class="weather-temp">${temp}°</div>
+        <div style="font-size: 13px; color: var(--ink-secondary); margin-top: 4px;">${name}</div>
+      </div>
+      <div class="weather-icon">${icon}</div>
+    </div>
+    <div class="weather-desc">${desc} · H ${tempMax}° · T ${tempMin}°</div>
+    <div class="weather-details">
+      <div class="weather-detail-item">💧 ${rain}%</div>
+      <div class="weather-detail-item">💨 ${Math.round(cur.wind_speed_10m)} km/h</div>
+      <div class="weather-detail-item">🌫️ ${cur.relative_humidity_2m}%</div>
+    </div>
+  `;
+}
+
+// ===== Portfolio =====
+const STORAGE_KEY = 'finn_portfolio_v1';
+function loadPortfolio() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
+function savePortfolio(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+function parseNumber(str) {
+  if (typeof str !== 'string') return NaN;
+  return parseFloat(str.trim().replace(/\s/g, '').replace(',', '.'));
+}
+
+function toggleAddForm() {
+  const form = document.getElementById('add-form');
+  const btnText = document.getElementById('add-btn-text');
+  form.classList.toggle('expanded');
+  btnText.textContent = form.classList.contains('expanded') ? 'Schließen' : 'Hinzufügen';
+}
+
+function addPosition() {
+  const ticker = document.getElementById('add-ticker').value.trim().toUpperCase();
+  const name = document.getElementById('add-name').value.trim();
+  const qty = parseNumber(document.getElementById('add-qty').value);
+  const cost = parseNumber(document.getElementById('add-cost').value);
+  if (!ticker || !name) { showToast('Bitte Ticker und Name ausfüllen', 'error'); return; }
+  if (!qty || qty <= 0 || isNaN(qty)) { showToast('Bitte gültige Anzahl eingeben', 'error'); return; }
+  if (!cost || cost <= 0 || isNaN(cost)) { showToast('Bitte gültigen Kaufkurs eingeben', 'error'); return; }
+  const portfolio = loadPortfolio();
+  portfolio.push({ ticker, name, qty, cost, id: Date.now() });
+  savePortfolio(portfolio);
+  ['add-ticker','add-name','add-qty','add-cost'].forEach(id => document.getElementById(id).value = '');
+  renderPortfolio();
+  showToast(`${name} hinzugefügt`, 'success');
+  if (window.innerWidth <= 640) {
+    document.getElementById('add-form').classList.remove('expanded');
+    document.getElementById('add-btn-text').textContent = 'Hinzufügen';
+  }
+}
+
+function deletePosition(id) {
+  const pos = loadPortfolio().find(p => p.id === id);
+  if (!pos) return;
+  if (!confirm(`Position "${pos.name}" wirklich löschen?`)) return;
+  savePortfolio(loadPortfolio().filter(p => p.id !== id));
+  renderPortfolio();
+  showToast(`${pos.name} gelöscht`);
+}
+
+let currentEditId = null;
+function openEditModal(id) {
+  const pos = loadPortfolio().find(p => p.id === id);
+  if (!pos) return;
+  currentEditId = id;
+  document.getElementById('edit-ticker').value = pos.ticker;
+  document.getElementById('edit-name').value = pos.name;
+  document.getElementById('edit-qty').value = pos.qty.toString().replace('.', ',');
+  document.getElementById('edit-cost').value = pos.cost.toString().replace('.', ',');
+  document.getElementById('edit-modal').classList.add('active');
+  document.body.classList.add('modal-open');
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('active');
+  document.body.classList.remove('modal-open');
+  currentEditId = null;
+}
+function saveEdit() {
+  if (currentEditId === null) return;
+  const ticker = document.getElementById('edit-ticker').value.trim().toUpperCase();
+  const name = document.getElementById('edit-name').value.trim();
+  const qty = parseNumber(document.getElementById('edit-qty').value);
+  const cost = parseNumber(document.getElementById('edit-cost').value);
+  if (!ticker || !name) { showToast('Bitte Ticker und Name ausfüllen', 'error'); return; }
+  if (!qty || qty <= 0 || isNaN(qty)) { showToast('Bitte gültige Anzahl eingeben', 'error'); return; }
+  if (!cost || cost <= 0 || isNaN(cost)) { showToast('Bitte gültigen Kaufkurs eingeben', 'error'); return; }
+  const portfolio = loadPortfolio();
+  const idx = portfolio.findIndex(p => p.id === currentEditId);
+  if (idx >= 0) {
+    portfolio[idx] = { ...portfolio[idx], ticker, name, qty, cost };
+    savePortfolio(portfolio);
+  }
+  closeEditModal();
+  renderPortfolio();
+  showToast('Gespeichert', 'success');
+}
+document.getElementById('edit-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'edit-modal') closeEditModal();
+});
+
+// Export/Import
+function buildExportData() {
+  return { version: 1, exportedAt: new Date().toISOString(), positions: loadPortfolio() };
+}
+function openExportModal() {
+  const portfolio = loadPortfolio();
+  if (portfolio.length === 0) { showToast('Keine Positionen zum Exportieren', 'error'); return; }
+  document.getElementById('export-text').value = JSON.stringify(buildExportData(), null, 2);
+  document.getElementById('export-modal').classList.add('active');
+  document.body.classList.add('modal-open');
+}
+function closeExportModal() {
+  document.getElementById('export-modal').classList.remove('active');
+  document.body.classList.remove('modal-open');
+}
+document.getElementById('export-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'export-modal') closeExportModal();
+});
+async function copyExport() {
+  const text = document.getElementById('export-text').value;
+  try { await navigator.clipboard.writeText(text); showToast('In Zwischenablage kopiert', 'success'); }
+  catch(e) {
+    const ta = document.getElementById('export-text');
+    ta.select(); ta.setSelectionRange(0, 99999);
+    try { document.execCommand('copy'); showToast('In Zwischenablage kopiert', 'success'); }
+    catch(err) { showToast('Bitte manuell kopieren', 'error'); }
+  }
+}
+function downloadExport() {
+  const json = JSON.stringify(buildExportData(), null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url; a.download = `portfolio-${date}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Datei wurde heruntergeladen', 'success');
+}
+function openImportModal() {
+  document.getElementById('import-text').value = '';
+  document.getElementById('import-file').value = '';
+  document.getElementById('import-replace').checked = false;
+  document.getElementById('import-modal').classList.add('active');
+  document.body.classList.add('modal-open');
+}
+function closeImportModal() {
+  document.getElementById('import-modal').classList.remove('active');
+  document.body.classList.remove('modal-open');
+}
+document.getElementById('import-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'import-modal') closeImportModal();
+});
+function loadImportFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => { document.getElementById('import-text').value = e.target.result; };
+  reader.onerror = () => showToast('Datei konnte nicht gelesen werden', 'error');
+  reader.readAsText(file);
+}
+function doImport() {
+  const text = document.getElementById('import-text').value.trim();
+  if (!text) { showToast('Bitte Datei wählen oder Code einfügen', 'error'); return; }
+  let data;
+  try { data = JSON.parse(text); } catch(e) { showToast('Ungültiges Format', 'error'); return; }
+  if (!data.positions || !Array.isArray(data.positions)) { showToast('Format nicht erkannt', 'error'); return; }
+  const valid = data.positions.filter(p =>
+    p.ticker && p.name &&
+    typeof p.qty === 'number' && p.qty > 0 &&
+    typeof p.cost === 'number' && p.cost > 0
+  );
+  if (valid.length === 0) { showToast('Keine gültigen Positionen gefunden', 'error'); return; }
+  const replace = document.getElementById('import-replace').checked;
+  const existing = loadPortfolio();
+  if (replace) {
+    if (existing.length > 0 && !confirm(`Alle ${existing.length} bestehenden Positionen werden gelöscht. Fortfahren?`)) return;
+    const newPortfolio = valid.map((p, i) => ({
+      ticker: p.ticker.toUpperCase(), name: p.name, qty: p.qty, cost: p.cost, id: Date.now() + i
+    }));
+    savePortfolio(newPortfolio);
+    showToast(`${valid.length} Positionen importiert`, 'success');
+  } else {
+    const merged = [...existing];
+    valid.forEach((p, i) => {
+      merged.push({
+        ticker: p.ticker.toUpperCase(), name: p.name, qty: p.qty, cost: p.cost, id: Date.now() + i
+      });
+    });
+    savePortfolio(merged);
+    showToast(`${valid.length} Positionen hinzugefügt`, 'success');
+  }
+  closeImportModal();
+  renderPortfolio();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeEditModal();
+    closeExportModal(); closeImportModal();
+    closeMenu();
+  }
+});
+
+// Yahoo Finance
+const lastQuotes = {};
+async function fetchQuote(ticker) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`;
+  try {
+    const res = await fetchWithFallback(url);
+    const data = await res.json();
+    const result = data.chart?.result?.[0];
+    if (!result) return null;
+    const meta = result.meta;
+    const quote = {
+      price: meta.regularMarketPrice,
+      previousClose: meta.chartPreviousClose || meta.previousClose,
+      currency: meta.currency
+    };
+    lastQuotes[ticker] = quote;
+    return quote;
+  } catch(e) { return null; }
+}
+
+// Historical data for chart
+const historicalCache = {};
+async function fetchHistorical(ticker, days) {
+  const cacheKey = `${ticker}_${days}`;
+  if (historicalCache[cacheKey]) return historicalCache[cacheKey];
+  let range = '1mo';
+  if (days <= 7) range = '1mo';
+  else if (days <= 30) range = '1mo';
+  else if (days <= 90) range = '3mo';
+  else range = '1y';
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${range}`;
+  try {
+    const res = await fetchWithFallback(url);
+    const data = await res.json();
+    const result = data.chart?.result?.[0];
+    if (!result) return null;
+    const timestamps = result.timestamp || [];
+    const closes = result.indicators?.quote?.[0]?.close || [];
+    const series = timestamps.map((t, i) => ({
+      date: new Date(t * 1000),
+      close: closes[i]
+    })).filter(p => p.close != null);
+    historicalCache[cacheKey] = series;
+    return series;
+  } catch(e) { return null; }
+}
+
+let currentChartPeriod = 30;
+
+async function loadChart() {
+  const portfolio = loadPortfolio();
+  const area = document.getElementById('chart-area');
+  if (portfolio.length === 0) {
+    area.innerHTML = '<div class="chart-empty">Füge Positionen hinzu, um den Verlauf zu sehen</div>';
+    return;
+  }
+  area.innerHTML = '<div class="chart-loading">Lade Verlauf…</div>';
+
+  // Fetch historical for each position
+  const histories = await Promise.all(portfolio.map(p =>
+    fetchHistorical(p.ticker, currentChartPeriod).then(h => ({ pos: p, history: h }))
+  ));
+
+  const validHistories = histories.filter(h => h.history && h.history.length > 0);
+  if (validHistories.length === 0) {
+    area.innerHTML = '<div class="chart-empty">Kein Verlauf verfügbar</div>';
+    return;
+  }
+
+  // Build daily portfolio values
+  // Get all unique dates across all histories
+  const allDates = new Set();
+  validHistories.forEach(h => h.history.forEach(p => allDates.add(p.date.toISOString().slice(0, 10))));
+  const sortedDates = [...allDates].sort();
+
+  // For each date, sum up the value
+  const points = sortedDates.map(dateStr => {
+    let total = 0;
+    let hasAny = false;
+    validHistories.forEach(h => {
+      // Find closest historical price <= this date
+      const matching = h.history.filter(p => p.date.toISOString().slice(0, 10) <= dateStr);
+      if (matching.length > 0) {
+        const last = matching[matching.length - 1];
+        total += last.close * h.pos.qty;
+        hasAny = true;
+      }
+    });
+    return hasAny ? { date: new Date(dateStr), value: total } : null;
+  }).filter(Boolean);
+
+  // Filter to requested period
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - currentChartPeriod);
+  const filtered = points.filter(p => p.date >= cutoff);
+
+  if (filtered.length < 2) {
+    area.innerHTML = '<div class="chart-empty">Nicht genug Daten für diesen Zeitraum</div>';
+    return;
+  }
+
+  drawChart(filtered);
+}
+
+function drawChart(points) {
+  const area = document.getElementById('chart-area');
+  const width = area.offsetWidth || 600;
+  const height = 200;
+  const padX = 10;
+  const padY = 20;
+
+  const values = points.map(p => p.value);
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const range = maxV - minV || 1;
+
+  const xStep = (width - 2 * padX) / Math.max(1, points.length - 1);
+
+  const coords = points.map((p, i) => ({
+    x: padX + i * xStep,
+    y: padY + (1 - (p.value - minV) / range) * (height - 2 * padY),
+    value: p.value,
+    date: p.date
+  }));
+
+  // Determine color based on overall trend
+  const isUp = points[points.length - 1].value >= points[0].value;
+  const color = isUp ? 'var(--gain)' : 'var(--loss)';
+  const gradientId = 'grad' + Date.now();
+
+  // Build path
+  const path = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(' ');
+  // Area path (closed)
+  const areaPath = `${path} L ${coords[coords.length - 1].x.toFixed(1)} ${height - padY} L ${coords[0].x.toFixed(1)} ${height - padY} Z`;
+
+  const svg = `
+    <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${isUp ? '#00873c' : '#c8102e'}" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="${isUp ? '#00873c' : '#c8102e'}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaPath}" fill="url(#${gradientId})"/>
+      <path d="${path}" fill="none" stroke="${isUp ? '#00873c' : '#c8102e'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="chart-tooltip" id="chart-tooltip"></div>
+    <div style="display: flex; justify-content: space-between; padding: 8px 4px 0; font-size: 11px; color: var(--ink-tertiary);">
+      <span>${formatChartDate(points[0].date)}</span>
+      <span>${formatChartDate(points[Math.floor(points.length/2)].date)}</span>
+      <span>${formatChartDate(points[points.length-1].date)}</span>
+    </div>
+  `;
+  area.innerHTML = svg;
+
+  // Add hover/touch interaction
+  const svgEl = area.querySelector('svg');
+  const tooltip = document.getElementById('chart-tooltip');
+  function handleMove(clientX) {
+    const rect = svgEl.getBoundingClientRect();
+    const x = clientX - rect.left;
+    // Find closest point
+    const scaleX = rect.width / width;
+    const closest = coords.reduce((best, c) => {
+      const cx = c.x * scaleX;
+      return Math.abs(cx - x) < Math.abs(best.x * scaleX - x) ? c : best;
+    }, coords[0]);
+    const tooltipX = closest.x * scaleX;
+    const tooltipY = closest.y * (rect.height / height);
+    tooltip.style.left = tooltipX + 'px';
+    tooltip.style.top = tooltipY + 'px';
+    tooltip.innerHTML = `${closest.value.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} € · ${formatChartDate(closest.date)}`;
+    tooltip.classList.add('show');
+  }
+  svgEl.addEventListener('mousemove', e => handleMove(e.clientX));
+  svgEl.addEventListener('touchmove', e => { if (e.touches[0]) handleMove(e.touches[0].clientX); });
+  svgEl.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+  svgEl.addEventListener('touchend', () => setTimeout(() => tooltip.classList.remove('show'), 1500));
+}
+
+function formatChartDate(d) {
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+}
+
+function switchChartPeriod(days) {
+  currentChartPeriod = days;
+  document.querySelectorAll('.chart-tab').forEach(t => {
+    t.classList.toggle('active', parseInt(t.dataset.period) === days);
+  });
+  loadChart();
+}
+
+const editIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+const trashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>`;
+
+async function renderPortfolio() {
+  const portfolio = loadPortfolio();
+  const container = document.getElementById('portfolio-list');
+  document.getElementById('position-count').textContent = portfolio.length;
+
+  if (portfolio.length === 0) {
+    container.innerHTML = `<div class="empty-state">Noch keine Positionen.<br><span style="color: var(--ink-tertiary); font-size: 14px;">Tippe unten auf "Hinzufügen"</span></div>`;
+    document.getElementById('total-value').textContent = '0,00 €';
+    document.getElementById('today-change-display').textContent = '—';
+    document.getElementById('invested').textContent = '0,00 €';
+    document.getElementById('total-gain').textContent = '—';
+    document.getElementById('total-gain-pct').textContent = '—';
+    checkAlerts();
+    loadChart();
+    return;
+  }
+
+  let totalValue = 0, totalInvested = 0, totalDayChange = 0;
+  const items = await Promise.all(portfolio.map(async (pos) => {
+    const quote = await fetchQuote(pos.ticker);
+    const currentPrice = quote?.price ?? pos.cost;
+    const prevClose = quote?.previousClose ?? currentPrice;
+    const value = currentPrice * pos.qty;
+    const invested = pos.cost * pos.qty;
+    const dayChange = (currentPrice - prevClose) * pos.qty;
+    const dayChangePct = prevClose ? ((currentPrice - prevClose) / prevClose * 100) : 0;
+    totalValue += value; totalInvested += invested; totalDayChange += dayChange;
+    const cls = dayChange >= 0 ? 'pos' : 'neg';
+    const sign = dayChange >= 0 ? '+' : '';
+    const currency = quote?.currency === 'USD' ? '$' : '€';
+
+    let isAlerted = false;
+    if (alertSettings.enabled && quote) {
+      let lossPct;
+      if (alertSettings.reference === 'cost') lossPct = ((pos.cost - quote.price) / pos.cost) * 100;
+      else lossPct = ((quote.previousClose - quote.price) / quote.previousClose) * 100;
+      isAlerted = lossPct >= alertSettings.threshold;
+    }
+
+    return `
+      <div class="portfolio-item">
+        <div>
+          <div class="asset-name${isAlerted ? ' alerted' : ''}">${pos.name}</div>
+          <div class="asset-meta">${pos.qty.toLocaleString('de-DE', {maximumFractionDigits: 6})} × ${currentPrice.toFixed(2)} ${currency}${quote ? '' : ' · offline'}</div>
+        </div>
+        <div>
+          <div class="asset-price">${value.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</div>
+          <div class="asset-change ${cls}">${sign}${dayChange.toFixed(2)} € · ${sign}${dayChangePct.toFixed(2)}%</div>
+        </div>
+        <div class="actions">
+          <button class="icon-btn edit" onclick="openEditModal(${pos.id})" title="Bearbeiten">${editIcon}</button>
+          <button class="icon-btn delete" onclick="deletePosition(${pos.id})" title="Löschen">${trashIcon}</button>
+        </div>
+      </div>
+    `;
+  }));
+
+  container.innerHTML = items.join('');
+  document.getElementById('total-value').textContent = totalValue.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+  const dayChangePct = (totalValue - totalDayChange) ? (totalDayChange / (totalValue - totalDayChange) * 100) : 0;
+  const dayCls = totalDayChange >= 0 ? 'pos' : 'neg';
+  const daySign = totalDayChange >= 0 ? '+' : '';
+  document.getElementById('today-change-display').innerHTML = `<span class="${dayCls}">${daySign}${totalDayChange.toFixed(2)} € heute · ${daySign}${dayChangePct.toFixed(2)}%</span>`;
+  document.getElementById('invested').textContent = totalInvested.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+  const totalGain = totalValue - totalInvested;
+  const totalGainPct = totalInvested ? (totalGain / totalInvested * 100) : 0;
+  const gCls = totalGain >= 0 ? 'pos' : 'neg';
+  const gSign = totalGain >= 0 ? '+' : '';
+  document.getElementById('total-gain').innerHTML = `<span class="${gCls}">${gSign}${totalGain.toFixed(2)} €</span>`;
+  document.getElementById('total-gain-pct').innerHTML = `<span class="${gCls}">${gSign}${totalGainPct.toFixed(2)}%</span>`;
+  checkAlerts();
+  loadChart();
+}
+
+// ===== INIT =====
+updateAlertStatus();
+updateScheduleStatus();
+loadWeather();
+loadSchedule();
+renderPortfolio();
+</script>
+</body>
+</html>
