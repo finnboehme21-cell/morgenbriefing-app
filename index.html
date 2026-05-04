@@ -9,8 +9,7 @@
 <meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Morgenbriefing</title>
-<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000'/%3E%3Ctext x='50%25' y='50%25' font-family='-apple-system,BlinkMacSystemFont,sans-serif' font-size='100' font-weight='600' fill='%230a84ff' text-anchor='middle' dominant-baseline='central'%3EM%3C/text%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #fbfbfd; --bg-section: #ffffff; --bg-subtle: #f5f5f7;
@@ -356,6 +355,33 @@
   }
   .hero-sub { font-size: 19px; color: var(--ink-secondary); margin-top: 16px; letter-spacing: -0.01em; }
   @media (max-width: 640px) { .hero-sub { font-size: 15px; margin-top: 12px; } }
+
+  .countdown-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-subtle); color: var(--ink-secondary);
+    padding: 6px 16px; border-radius: 980px;
+    font-size: 14px; font-weight: 500; margin-top: 14px;
+    letter-spacing: -0.01em; cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    border: none; font-family: inherit;
+  }
+  .countdown-pill:empty { display: none; }
+  .countdown-pill:active { background: var(--line-subtle); transform: scale(0.97); }
+  @media (max-width: 640px) { .countdown-pill { font-size: 13px; } }
+
+  .hero-quote {
+    margin-top: 28px; color: var(--ink-tertiary);
+    max-width: 420px; margin-left: auto; margin-right: auto;
+  }
+  .hero-quote-text {
+    font-size: 14px; line-height: 1.55; font-style: italic; letter-spacing: -0.005em;
+  }
+  .hero-quote-author {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.07em; margin-top: 7px; color: var(--ink-tertiary);
+    opacity: 0.75;
+  }
+  @media (max-width: 640px) { .hero-quote-text { font-size: 13px; } }
 
   /* WEATHER + DAY GRID */
   .day-grid {
@@ -915,6 +941,15 @@
         <div class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
       </button>
 
+      <button class="menu-item" onclick="openSettings('countdown'); applyCountdownSettingsToUI();">
+        <div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+        <div class="menu-item-content">
+          <div class="menu-item-label">Countdown</div>
+          <div class="menu-item-sub" id="countdown-status-sub">Nicht konfiguriert</div>
+        </div>
+        <div class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+      </button>
+
       <button class="menu-item" onclick="openSettings('nachrichten'); loadNachrichten();">
         <div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg></div>
         <div class="menu-item-content">
@@ -1029,6 +1064,33 @@
     <button class="save-btn" onclick="saveScheduleSettings()">Speichern</button>
   </div>
 
+  <!-- Countdown Settings Panel -->
+  <div class="settings-panel" id="settings-countdown">
+    <button class="setting-back" onclick="closeSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      Zurück
+    </button>
+
+    <div class="setting-group">
+      <div class="setting-block">
+        <div class="setting-label">Ereignis</div>
+        <div class="setting-desc" style="margin-bottom: 12px;">Worauf zählst du hin?</div>
+        <input type="text" class="setting-input" id="countdown-name" placeholder="z.B. Sommerferien, Abitur …">
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-block">
+        <div class="setting-label">Datum</div>
+        <div class="setting-desc" style="margin-bottom: 12px;">An welchem Tag findet es statt?</div>
+        <input type="date" class="setting-input" id="countdown-date">
+      </div>
+    </div>
+
+    <button class="save-btn" onclick="saveCountdown()">Speichern</button>
+    <button class="save-btn" style="background: transparent; color: var(--ink-tertiary); border: 1px solid var(--line); margin-top: 8px;" onclick="clearCountdown()">Countdown entfernen</button>
+  </div>
+
   <!-- Nachrichten Panel -->
   <div class="settings-panel" id="settings-nachrichten">
     <div class="news-panel-top">
@@ -1117,6 +1179,11 @@
     <div class="hero-eyebrow" id="weekday-greeting">Guten Morgen</div>
     <h1>Deine Welt. <br><span class="accent">In einem Blick.</span></h1>
     <p class="hero-sub" id="full-date">—</p>
+    <button class="countdown-pill" id="countdown-display" onclick="openSettings('countdown'); applyCountdownSettingsToUI();"></button>
+    <div class="hero-quote" id="hero-quote">
+      <div class="hero-quote-text" id="quote-text"></div>
+      <div class="hero-quote-author" id="quote-author"></div>
+    </div>
   </section>
 
   <!-- Day Grid: Wetter + Stundenplan -->
@@ -1372,6 +1439,8 @@ function openSettings(panel) {
       applyScheduleSettingsToUI();
     } else if (panel === 'about') {
       document.getElementById('menu-title').textContent = 'Über';
+    } else if (panel === 'countdown') {
+      document.getElementById('menu-title').textContent = 'Countdown';
     } else if (panel === 'nachrichten') {
       document.getElementById('menu-title').textContent = 'Nachrichten';
     }
@@ -2802,6 +2871,88 @@ async function renderPortfolio() {
   loadChart();
 }
 
+// ===== Zitat des Tages =====
+const QUOTES = [
+  { text: "Der Weg entsteht beim Gehen.", author: "Antonio Machado" },
+  { text: "Fange nie an aufzuhören, höre nie auf anzufangen.", author: "Cicero" },
+  { text: "Es ist nicht genug zu wissen – man muss auch anwenden; es ist nicht genug zu wollen – man muss auch tun.", author: "Goethe" },
+  { text: "In der Mitte jeder Schwierigkeit liegt eine Möglichkeit.", author: "Albert Einstein" },
+  { text: "Wer kämpft, kann verlieren. Wer nicht kämpft, hat schon verloren.", author: "Bertolt Brecht" },
+  { text: "Das Geheimnis des Vorankommens ist das Beginnen.", author: "Mark Twain" },
+  { text: "Erfolg ist die Summe kleiner Anstrengungen, die jeden Tag wiederholt werden.", author: "Robert Collier" },
+  { text: "Wer aufhört, besser zu werden, hat aufgehört, gut zu sein.", author: "Philip Rosenthal" },
+  { text: "Der größte Ruhm ist nicht der, niemals zu fallen, sondern jedes Mal wieder aufzustehen.", author: "Nelson Mandela" },
+  { text: "Tu, was du kannst, mit dem, was du hast, wo du auch bist.", author: "Theodore Roosevelt" },
+  { text: "Alles scheint unmöglich, bis es getan ist.", author: "Nelson Mandela" },
+  { text: "Die Zukunft gehört denen, die an die Schönheit ihrer Träume glauben.", author: "Eleanor Roosevelt" },
+  { text: "Man sieht nur mit dem Herzen gut. Das Wesentliche ist für die Augen unsichtbar.", author: "Antoine de Saint-Exupéry" },
+  { text: "Werde, der du bist.", author: "Friedrich Nietzsche" },
+  { text: "Sei du selbst die Veränderung, die du dir wünschst für diese Welt.", author: "Mahatma Gandhi" },
+  { text: "Das Leben ist wie Fahrradfahren. Um die Balance zu halten, musst du in Bewegung bleiben.", author: "Albert Einstein" },
+  { text: "Auch aus Steinen, die dir in den Weg gelegt werden, kannst du etwas Schönes bauen.", author: "Erich Kästner" },
+  { text: "Wenn du schnell gehen willst, geh allein. Wenn du weit gehen willst, geh zusammen.", author: "Afrikanisches Sprichwort" },
+  { text: "Träume nicht dein Leben, sondern lebe deinen Traum.", author: "Unbekannt" },
+  { text: "Der Mensch wächst mit seinen Aufgaben.", author: "Schiller" },
+  { text: "Es gibt keine Zufälle. Es gibt nur Begegnungen.", author: "Paul Coelho" },
+  { text: "Nicht weil es schwer ist, wagen wir es nicht, sondern weil wir es nicht wagen, ist es schwer.", author: "Seneca" },
+  { text: "Dein heutiges Ich ist das Ergebnis deiner gestrigen Gedanken.", author: "Unbekannt" },
+  { text: "Handle stets so, dass du die Menschheit, sowohl in deiner Person als auch in der Person jedes anderen, jederzeit als Zweck, niemals bloß als Mittel behandelst.", author: "Kant" },
+  { text: "Freude am Beruf lässt alles besser gelingen.", author: "Aristoteles" },
+  { text: "Ein Mensch, der eine Stunde seiner Zeit verschwendet, hat den Wert des Lebens nicht erkannt.", author: "Charles Darwin" },
+];
+function renderQuote() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now - start) / 86400000);
+  const q = QUOTES[dayOfYear % QUOTES.length];
+  document.getElementById('quote-text').textContent = `„${q.text}"`;
+  document.getElementById('quote-author').textContent = `— ${q.author}`;
+}
+
+// ===== Countdown =====
+const COUNTDOWN_KEY = 'finn_countdown';
+function loadCountdownSettings() {
+  try { return JSON.parse(localStorage.getItem(COUNTDOWN_KEY)) || null; } catch(e) { return null; }
+}
+function renderCountdown() {
+  const s = loadCountdownSettings();
+  const el = document.getElementById('countdown-display');
+  if (!s?.name || !s?.date) { el.textContent = ''; return; }
+  const target = new Date(s.date + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((target - today) / 86400000);
+  if (diff < 0) { el.textContent = ''; return; }
+  if (diff === 0) el.textContent = `🎉 Heute ist ${s.name}`;
+  else if (diff === 1) el.textContent = `📅 Morgen: ${s.name}`;
+  else el.textContent = `📅 ${diff} Tage bis ${s.name}`;
+}
+function updateCountdownStatus() {
+  const s = loadCountdownSettings();
+  document.getElementById('countdown-status-sub').textContent = s?.name || 'Nicht konfiguriert';
+}
+function applyCountdownSettingsToUI() {
+  const s = loadCountdownSettings();
+  document.getElementById('countdown-name').value = s?.name || '';
+  document.getElementById('countdown-date').value = s?.date || '';
+}
+function saveCountdown() {
+  const name = document.getElementById('countdown-name').value.trim();
+  const date = document.getElementById('countdown-date').value;
+  if (!name || !date) { showToast('Bitte Name und Datum angeben', 'error'); return; }
+  try { localStorage.setItem(COUNTDOWN_KEY, JSON.stringify({ name, date })); } catch(e) {}
+  renderCountdown();
+  updateCountdownStatus();
+  closeSettings();
+  showToast('Countdown gespeichert');
+}
+function clearCountdown() {
+  try { localStorage.removeItem(COUNTDOWN_KEY); } catch(e) {}
+  renderCountdown();
+  updateCountdownStatus();
+  closeSettings();
+  showToast('Countdown entfernt');
+}
+
 // ===== Nachrichten =====
 const NEWS_FEEDS = [
   { label: '🌍 Welt',        url: 'https://rss.dw.com/xml/rss-en-world' },
@@ -2900,6 +3051,9 @@ function togglePortfolioSection() {
 })();
 
 // ===== INIT =====
+renderQuote();
+renderCountdown();
+updateCountdownStatus();
 updateAlertStatus();
 updateScheduleStatus();
 loadWeather();
