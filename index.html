@@ -516,6 +516,34 @@
   section { padding: 40px 0; }
   @media (max-width: 640px) { section { padding: 28px 0; } }
 
+  .portfolio-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding-bottom: 24px;
+    user-select: none; -webkit-user-select: none;
+  }
+  .portfolio-section-header:active { opacity: 0.7; }
+  .portfolio-section-title {
+    font-size: 13px; font-weight: 600;
+    color: var(--ink-tertiary);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .portfolio-section-summary {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .portfolio-section-total {
+    font-size: 15px; font-weight: 500; color: var(--ink-secondary);
+    letter-spacing: -0.01em;
+  }
+  .portfolio-chevron {
+    color: var(--ink-tertiary);
+    transition: transform 0.25s ease;
+    display: flex; align-items: center;
+  }
+  .portfolio-chevron svg { width: 16px; height: 16px; }
+  .portfolio-body { overflow: hidden; }
+  .portfolio-body.collapsed { display: none; }
+  .portfolio-section-header[aria-expanded="true"] .portfolio-chevron { transform: rotate(180deg); }
+
   .portfolio-hero { text-align: center; padding: 24px 0 30px; }
   .portfolio-hero-label { font-size: 15px; color: var(--ink-secondary); margin-bottom: 8px; }
   .portfolio-hero-value {
@@ -792,6 +820,65 @@
     border-radius: 980px; font-size: 12px; margin-top: 16px;
   }
 
+  /* NACHRICHTEN */
+  .news-panel-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .news-panel-top .setting-back { margin-bottom: 0; }
+  .news-refresh-btn {
+    background: transparent; border: 1px solid var(--line);
+    color: var(--ink-secondary); padding: 5px 12px;
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    border-radius: 980px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .news-refresh-btn:active { background: var(--bg-subtle); transform: scale(0.96); }
+  .news-refresh-btn:disabled { opacity: 0.4; pointer-events: none; }
+  .news-refresh-btn svg { width: 12px; height: 12px; }
+  .news-timestamp {
+    font-size: 11px; color: var(--ink-tertiary);
+    margin-bottom: 18px; min-height: 16px;
+  }
+  .news-category { margin-bottom: 20px; }
+  .news-category-header {
+    font-size: 11px; font-weight: 600; color: var(--ink-tertiary);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .news-items {
+    background: var(--bg-subtle); border-radius: 12px; overflow: hidden;
+  }
+  .news-item {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-item-title {
+    font-size: 13px; font-weight: 500; line-height: 1.4;
+    color: var(--ink); letter-spacing: -0.005em;
+  }
+  .news-item-desc {
+    font-size: 12px; color: var(--ink-tertiary);
+    margin-top: 3px; line-height: 1.4;
+  }
+  .news-loading {
+    text-align: center; padding: 40px 0;
+    color: var(--ink-tertiary); font-size: 13px;
+  }
+  .news-spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--line); border-top-color: var(--link);
+    border-radius: 50%; animation: spin 0.75s linear infinite;
+    margin: 0 auto 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .news-error {
+    background: var(--warning-bg); border: 1px solid var(--warning-border);
+    border-radius: 12px; padding: 14px;
+    color: var(--warning); font-size: 13px; line-height: 1.5;
+  }
+
 </style>
 </head>
 <body>
@@ -823,6 +910,15 @@
         <div class="menu-item-content">
           <div class="menu-item-label">Stundenplan</div>
           <div class="menu-item-sub" id="schedule-status-sub">Nicht konfiguriert</div>
+        </div>
+        <div class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+      </button>
+
+      <button class="menu-item" onclick="openSettings('nachrichten'); loadNachrichten();">
+        <div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg></div>
+        <div class="menu-item-content">
+          <div class="menu-item-label">Nachrichten</div>
+          <div class="menu-item-sub" id="nachrichten-status-sub">Heute laden</div>
         </div>
         <div class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
       </button>
@@ -932,6 +1028,24 @@
     <button class="save-btn" onclick="saveScheduleSettings()">Speichern</button>
   </div>
 
+  <!-- Nachrichten Panel -->
+  <div class="settings-panel" id="settings-nachrichten">
+    <div class="news-panel-top">
+      <button class="setting-back" onclick="closeSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Zurück
+      </button>
+      <button class="news-refresh-btn" id="news-refresh-btn" onclick="loadNachrichten(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        Aktualisieren
+      </button>
+    </div>
+    <div class="news-timestamp" id="nachrichten-timestamp"></div>
+    <div id="nachrichten-content">
+      <div class="news-loading"><div class="news-spinner"></div>Nachrichten werden geladen…</div>
+    </div>
+  </div>
+
   <!-- About Panel -->
   <div class="settings-panel" id="settings-about">
     <button class="setting-back" onclick="closeSettings()">
@@ -1022,6 +1136,15 @@
   </div>
 
   <section class="fade-in">
+    <div class="portfolio-section-header" onclick="togglePortfolioSection()" aria-expanded="false" id="portfolio-section-header">
+      <div class="portfolio-section-title">Portfolio</div>
+      <div class="portfolio-section-summary">
+        <span class="portfolio-section-total" id="portfolio-section-total">— €</span>
+        <span class="portfolio-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+      </div>
+    </div>
+
+    <div class="portfolio-body collapsed" id="portfolio-body">
     <div class="portfolio-hero">
       <div class="portfolio-hero-label">Dein Portfolio</div>
       <div class="portfolio-hero-value" id="total-value">— €</div>
@@ -1088,6 +1211,7 @@
     </div>
 
     <div class="info-pill">Daten werden nur lokal gespeichert</div>
+    </div><!-- /portfolio-body -->
   </section>
 
   <footer class="footer">
@@ -1164,6 +1288,10 @@ function showToast(message, type = '') {
   toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3000);
 }
 
+function escapeHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ===== CORS =====
 const CORS_PROXIES = [
   url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -1201,17 +1329,21 @@ function toggleTheme() {
 applyTheme(getStoredTheme());
 
 // ===== Date =====
-const today = new Date();
 const weekdays = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 const weekdaysShort = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-const hour = today.getHours();
-let greeting = 'Guten Morgen';
-if (hour >= 12 && hour < 18) greeting = 'Guten Tag';
-else if (hour >= 18) greeting = 'Guten Abend';
-document.getElementById('weekday-greeting').textContent = `${greeting}, Finn`;
-document.getElementById('full-date').textContent = `${weekdays[today.getDay()]}, ${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
-document.getElementById('now-time').textContent = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+function updateDateTime() {
+  const now = new Date();
+  const hour = now.getHours();
+  let greeting = 'Guten Morgen';
+  if (hour >= 12 && hour < 18) greeting = 'Guten Tag';
+  else if (hour >= 18) greeting = 'Guten Abend';
+  document.getElementById('weekday-greeting').textContent = `${greeting}, Finn`;
+  document.getElementById('full-date').textContent = `${weekdays[now.getDay()]}, ${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('now-time').textContent = now.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+}
+updateDateTime();
+setInterval(updateDateTime, 60000);
 
 // ===== Menu =====
 function openMenu() {
@@ -1239,6 +1371,8 @@ function openSettings(panel) {
       applyScheduleSettingsToUI();
     } else if (panel === 'about') {
       document.getElementById('menu-title').textContent = 'Über';
+    } else if (panel === 'nachrichten') {
+      document.getElementById('menu-title').textContent = 'Nachrichten';
     }
   }
   if (!document.getElementById('side-menu').classList.contains('active')) openMenu();
@@ -1368,7 +1502,7 @@ function renderAlertBanner(alerts) {
   } else {
     headline.textContent = `${alerts.length} Positionen sind gefallen`;
     body.innerHTML = `Folgende Positionen liegen unter deinem Schwellwert von −${alertSettings.threshold}% ${refText}:<ul>${
-      alerts.map(a => `<li><strong>${a.name}</strong>: −${a.lossPct.toFixed(2)}% (${a.currentPrice.toFixed(2)} €)</li>`).join('')
+      alerts.map(a => `<li><strong>${escapeHtml(a.name)}</strong>: −${a.lossPct.toFixed(2)}% (${a.currentPrice.toFixed(2)} €)</li>`).join('')
     }</ul>`;
   }
   banner.classList.add('show');
@@ -1571,7 +1705,7 @@ function summarizeFoundIds(label, values, requested) {
   const nearby = values
     .filter(v => normalizeScheduleName(v).startsWith(requestedPrefix))
     .slice(0, 12);
-  const sample = (nearby.length ? nearby : values.slice(0, 12)).join(', ');
+  const sample = (nearby.length ? nearby : values.slice(0, 12)).map(escapeHtml).join(', ');
   return `${label} gefunden (${values.length}): ${sample || 'keine'}`;
 }
 
@@ -1808,7 +1942,7 @@ async function loadSchedule() {
     const classUrl = buildUntisUrl(scheduleSettings.baseUrl, meta.week, 'c', meta.classes, scheduleSettings.classId);
     if (!classUrl) {
       throw new Error([
-        `Klasse "${scheduleSettings.classId}" nicht in Untis gefunden.`,
+        `Klasse &ldquo;${escapeHtml(scheduleSettings.classId)}&rdquo; nicht in Untis gefunden.`,
         summarizeFoundIds('Klassen', meta.classes, scheduleSettings.classId),
         summarizeFoundIds('Schüler-IDs', meta.students, scheduleSettings.studentId)
       ].join('<br>'));
@@ -1850,13 +1984,13 @@ async function loadSchedule() {
       if (!enrichedSchedule) throw new Error('Klassenplan konnte nicht gelesen werden');
       if (!studentUrl) {
         scheduleNotice = [
-          `Schüler-ID "${scheduleSettings.studentId}" nicht in Untis gefunden. Zeige Klassenplan "${scheduleSettings.classId}".`,
+          `Schüler-ID &ldquo;${escapeHtml(scheduleSettings.studentId)}&rdquo; nicht in Untis gefunden. Zeige Klassenplan &ldquo;${escapeHtml(scheduleSettings.classId)}&rdquo;.`,
           summarizeFoundIds('Schüler-IDs', meta.students, scheduleSettings.studentId),
           summarizeFoundIds('Klassen', meta.classes, scheduleSettings.classId)
         ].join('<br>');
         showToast(`Schüler-ID "${scheduleSettings.studentId}" nicht gefunden. Zeige Klassenplan.`, 'error');
       } else {
-        scheduleNotice = `Schülerplan konnte nicht gelesen werden. Zeige Klassenplan "${scheduleSettings.classId}".`;
+        scheduleNotice = `Schülerplan konnte nicht gelesen werden. Zeige Klassenplan &ldquo;${escapeHtml(scheduleSettings.classId)}&rdquo;.`;
         showToast('Schülerplan nicht lesbar. Zeige Klassenplan.', 'error');
       }
     }
@@ -1936,12 +2070,12 @@ function renderScheduleBanner(changes) {
   const items = changes.map(c => {
     const day = dayNames[c.day];
     const lessonTime = timeForLesson(c.lesson);
-    let msg = `${day} ${lessonTime}, ${c.subject}: `;
+    let msg = `${day} ${lessonTime}, ${escapeHtml(c.subject)}: `;
     if (c.type === 'cancel') msg += 'fällt aus';
     else if (c.type === 'new') msg += 'neue Stunde';
-    else if (c.type === 'room') msg += `Raum ${c.oldRoom || '?'} → ${c.newRoom}`;
-    else if (c.type === 'teacher') msg += `Lehrer ${c.oldTeacher || '?'} → ${c.newTeacher}`;
-    else if (c.type === 'note') msg += `Notiz: ${c.note}`;
+    else if (c.type === 'room') msg += `Raum ${escapeHtml(c.oldRoom || '?')} → ${escapeHtml(c.newRoom)}`;
+    else if (c.type === 'teacher') msg += `Lehrer ${escapeHtml(c.oldTeacher || '?')} → ${escapeHtml(c.newTeacher)}`;
+    else if (c.type === 'note') msg += `Notiz: ${escapeHtml(c.note)}`;
     return `<li>${msg}</li>`;
   });
   body.innerHTML = `<ul>${items.join('')}</ul>`;
@@ -2003,10 +2137,10 @@ function renderSchedule(schedule) {
         <div class="schedule-item ${isNow ? 'now' : ''}">
           <div class="schedule-time">${startTime}<br><span style="font-size:11px;opacity:0.7">${lessonRange}</span></div>
           <div>
-            <div class="schedule-subject">${l.subject}</div>
-            <div class="schedule-meta">${l.teacher || ''}${l.extra ? ' · ' + l.extra : ''}</div>
+            <div class="schedule-subject">${escapeHtml(l.subject)}</div>
+            <div class="schedule-meta">${escapeHtml(l.teacher || '')}${l.extra ? ' · ' + escapeHtml(l.extra) : ''}</div>
           </div>
-          <div class="schedule-room">${l.room || ''}</div>
+          <div class="schedule-room">${escapeHtml(l.room || '')}</div>
         </div>
       `;
     }
@@ -2059,10 +2193,10 @@ function switchScheduleDay(dayKey) {
         <div class="schedule-item ${isNow ? 'now' : ''}">
           <div class="schedule-time">${startTime}<br><span style="font-size:11px;opacity:0.7">${lessonRange}</span></div>
           <div>
-            <div class="schedule-subject">${l.subject}</div>
-            <div class="schedule-meta">${l.teacher || ''}${l.extra ? ' · ' + l.extra : ''}</div>
+            <div class="schedule-subject">${escapeHtml(l.subject)}</div>
+            <div class="schedule-meta">${escapeHtml(l.teacher || '')}${l.extra ? ' · ' + escapeHtml(l.extra) : ''}</div>
           </div>
-          <div class="schedule-room">${l.room || ''}</div>
+          <div class="schedule-room">${escapeHtml(l.room || '')}</div>
         </div>
       `;
     }
@@ -2598,6 +2732,7 @@ async function renderPortfolio() {
   if (portfolio.length === 0) {
     container.innerHTML = `<div class="empty-state">Noch keine Positionen.<br><span style="color: var(--ink-tertiary); font-size: 14px;">Tippe unten auf "Hinzufügen"</span></div>`;
     document.getElementById('total-value').textContent = '0,00 €';
+    document.getElementById('portfolio-section-total').textContent = '0,00 €';
     document.getElementById('today-change-display').textContent = '—';
     document.getElementById('invested').textContent = '0,00 €';
     document.getElementById('total-gain').textContent = '—';
@@ -2632,7 +2767,7 @@ async function renderPortfolio() {
     return `
       <div class="portfolio-item">
         <div>
-          <div class="asset-name${isAlerted ? ' alerted' : ''}">${pos.name}</div>
+          <div class="asset-name${isAlerted ? ' alerted' : ''}">${escapeHtml(pos.name)}</div>
           <div class="asset-meta">${pos.qty.toLocaleString('de-DE', {maximumFractionDigits: 6})} × ${currentPrice.toFixed(2)} ${currency}${quote ? '' : ' · offline'}</div>
         </div>
         <div>
@@ -2648,7 +2783,9 @@ async function renderPortfolio() {
   }));
 
   container.innerHTML = items.join('');
-  document.getElementById('total-value').textContent = totalValue.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+  const totalValueStr = totalValue.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+  document.getElementById('total-value').textContent = totalValueStr;
+  document.getElementById('portfolio-section-total').textContent = totalValueStr;
   const dayChangePct = (totalValue - totalDayChange) ? (totalDayChange / (totalValue - totalDayChange) * 100) : 0;
   const dayCls = totalDayChange >= 0 ? 'pos' : 'neg';
   const daySign = totalDayChange >= 0 ? '+' : '';
@@ -2664,6 +2801,103 @@ async function renderPortfolio() {
   loadChart();
 }
 
+// ===== Nachrichten =====
+const NEWS_FEEDS = [
+  { label: '🌍 Welt',        url: 'https://rss.dw.com/xml/rss-en-world' },
+  { label: '🇩🇪 Deutschland', url: 'https://rss.dw.com/xml/rss-de-ger'   },
+  { label: '💼 Wirtschaft',  url: 'https://rss.dw.com/xml/rss-de-wir'   },
+];
+let newsCache = null;
+let newsFetchTime = null;
+let newsFetching = false;
+
+async function fetchFeedItems(url) {
+  const res = await fetchWithFallback(url);
+  const text = await res.text();
+  const doc = new DOMParser().parseFromString(text, 'text/xml');
+  return Array.from(doc.querySelectorAll('item')).slice(0, 4).map(item => {
+    const title = item.querySelector('title')?.textContent?.trim() || '';
+    const raw = (item.querySelector('description')?.textContent || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const desc = raw.length > 130 ? raw.slice(0, 130).replace(/\s\S*$/, '') + '…' : raw;
+    return { title, desc };
+  }).filter(i => i.title);
+}
+
+async function loadNachrichten(force = false) {
+  if (newsFetching) return;
+  if (!force && newsCache && newsFetchTime && (Date.now() - newsFetchTime < 30 * 60 * 1000)) {
+    renderNachrichten(newsCache);
+    return;
+  }
+  newsFetching = true;
+  const content = document.getElementById('nachrichten-content');
+  const refreshBtn = document.getElementById('news-refresh-btn');
+  document.getElementById('nachrichten-timestamp').textContent = '';
+  content.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Nachrichten werden geladen…</div>';
+  if (refreshBtn) refreshBtn.disabled = true;
+  try {
+    const results = await Promise.all(
+      NEWS_FEEDS.map(feed =>
+        fetchFeedItems(feed.url)
+          .then(items => ({ ...feed, items }))
+          .catch(() => ({ ...feed, items: [] }))
+      )
+    );
+    newsCache = results;
+    newsFetchTime = Date.now();
+    renderNachrichten(results);
+    document.getElementById('nachrichten-status-sub').textContent =
+      new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+  } catch(e) {
+    content.innerHTML = '<div class="news-error">Nachrichten konnten nicht geladen werden. Bitte Internetverbindung prüfen.</div>';
+  } finally {
+    newsFetching = false;
+    if (refreshBtn) refreshBtn.disabled = false;
+  }
+}
+
+function renderNachrichten(feeds) {
+  const content = document.getElementById('nachrichten-content');
+  const ts = document.getElementById('nachrichten-timestamp');
+  if (newsFetchTime) {
+    ts.textContent = 'Zuletzt aktualisiert: ' + new Date(newsFetchTime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+  }
+  let html = '';
+  for (const feed of feeds) {
+    if (!feed.items.length) continue;
+    html += `<div class="news-category">
+      <div class="news-category-header">${feed.label}</div>
+      <div class="news-items">${feed.items.map(item => `
+        <div class="news-item">
+          <div class="news-item-title">${escapeHtml(item.title)}</div>
+          ${item.desc ? `<div class="news-item-desc">${escapeHtml(item.desc)}</div>` : ''}
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  content.innerHTML = html || '<div class="news-error">Keine Nachrichten verfügbar.</div>';
+}
+
+// ===== Portfolio collapse =====
+const PORTFOLIO_COLLAPSED_KEY = 'finn_portfolio_collapsed';
+function togglePortfolioSection() {
+  const body = document.getElementById('portfolio-body');
+  const header = document.getElementById('portfolio-section-header');
+  const collapsed = body.classList.toggle('collapsed');
+  header.setAttribute('aria-expanded', String(!collapsed));
+  try { localStorage.setItem(PORTFOLIO_COLLAPSED_KEY, collapsed ? '1' : '0'); } catch(e) {}
+}
+(function initPortfolioCollapse() {
+  let collapsed = true;
+  try { const v = localStorage.getItem(PORTFOLIO_COLLAPSED_KEY); if (v === '0') collapsed = false; } catch(e) {}
+  const body = document.getElementById('portfolio-body');
+  const header = document.getElementById('portfolio-section-header');
+  if (!collapsed) {
+    body.classList.remove('collapsed');
+    header.setAttribute('aria-expanded', 'true');
+  }
+})();
+
 // ===== INIT =====
 updateAlertStatus();
 updateScheduleStatus();
@@ -2673,4 +2907,3 @@ renderPortfolio();
 </script>
 </body>
 </html>
-<!-- test -->
